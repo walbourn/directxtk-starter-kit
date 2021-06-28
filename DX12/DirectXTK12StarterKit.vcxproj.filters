@@ -14,19 +14,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="StepTimer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="d3dx12.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Game.h">
+    <ClInclude Include="..\Shared\StepTimer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\Game.h">
       <Filter>MainLoop</Filter>
     </ClInclude>
-    <ClInclude Include="config.h" />
+    <ClInclude Include="..\Shared\config.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -36,7 +36,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>MainLoop</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
+    <ClCompile Include="..\Shared\Game.cpp">
       <Filter>MainLoop</Filter>
     </ClCompile>
   </ItemGroup>

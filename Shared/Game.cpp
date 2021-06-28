@@ -21,6 +21,13 @@ Game::Game() noexcept(false) :
 
 Game::~Game()
 {
+#ifdef BUILD_DX12
+    if (m_deviceResources)
+    {
+        m_deviceResources->WaitForGpu();
+    }
+#endif
+
     if (m_audEngine)
     {
         m_audEngine->Suspend();
@@ -85,6 +92,11 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const&)
 {
+    PIXBeginEvent(PIX_COLOR_DEFAULT, L"Update");
+
+    // TODO -
+
+    PIXEndEvent();
 }
 #pragma endregion
 
@@ -98,22 +110,54 @@ void Game::Render()
         return;
     }
 
+#ifdef BUILD_DX12
+    m_deviceResources->Prepare();
     Clear();
 
-    m_deviceResources->PIXBeginEvent(L"Render");
+    auto commandList = m_deviceResources->GetCommandList();
+    PIXBeginEvent(commandList, PIX_COLOR_DEFAULT, L"Render");
+
+    // TODO -
+
+    PIXEndEvent(commandList);
+    PIXBeginEvent(PIX_COLOR_DEFAULT, L"Present");
+    m_deviceResources->Present();
+    m_graphicsMemory->Commit(m_deviceResources->GetCommandQueue());
+    PIXEndEvent();
+
+#else // BUILD_DX11
+    Clear();
+
     //auto context = m_deviceResources->GetD3DDeviceContext();
 
-    m_deviceResources->PIXEndEvent();
+    // TODO -
 
-    // Show the new frame.
     m_deviceResources->Present();
+#endif
 }
 
 // Helper method to clear the back buffers.
 void Game::Clear()
 {
-    m_deviceResources->PIXBeginEvent(L"Clear");
+    XMVECTORF32 clearColor;
 
+#ifdef BUILD_DX12
+    // Clear the views.
+    auto rtvDescriptor = m_deviceResources->GetRenderTargetView();
+    auto dsvDescriptor = m_deviceResources->GetDepthStencilView();
+
+    auto commandList = m_deviceResources->GetCommandList();
+    PIXBeginEvent(commandList, PIX_COLOR_DEFAULT, L"Clear");
+    commandList->OMSetRenderTargets(1, &rtvDescriptor, FALSE, &dsvDescriptor);
+    commandList->ClearRenderTargetView(rtvDescriptor, Colors::CornflowerBlue, 0, nullptr);
+    commandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+    // Set the viewport and scissor rect.
+    auto viewport = m_deviceResources->GetScreenViewport();
+    auto scissorRect = m_deviceResources->GetScissorRect();
+    commandList->RSSetViewports(1, &viewport);
+    commandList->RSSetScissorRects(1, &scissorRect);
+#else
     // Clear the views.
     auto context = m_deviceResources->GetD3DDeviceContext();
     auto renderTarget = m_deviceResources->GetRenderTargetView();
@@ -126,8 +170,7 @@ void Game::Clear()
     // Set the viewport.
     auto viewport = m_deviceResources->GetScreenViewport();
     context->RSSetViewports(1, &viewport);
-
-    m_deviceResources->PIXEndEvent();
+#endif
 }
 #pragma endregion
 
@@ -180,7 +223,22 @@ void Game::GetDefaultSize(int& width, int& height) const noexcept
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-    //auto device = m_deviceResources->GetD3DDevice();
+#ifdef BUILD_DX12
+    auto device = m_deviceResources->GetD3DDevice();
+
+    // Check Shader Model 6 support
+    D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_0 };
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel)))
+        || (shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_0))
+    {
+#ifdef _DEBUG
+        OutputDebugStringA("ERROR: Shader Model 6.0 is not supported!\n");
+#endif
+        throw std::runtime_error("Shader Model 6.0 is not supported!");
+    }
+
+    m_graphicsMemory = std::make_unique<GraphicsMemory>(device);
+#endif
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

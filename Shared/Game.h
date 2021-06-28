@@ -8,8 +8,6 @@
 #include "StepTimer.h"
 
 
-// A basic game implementation that creates a D3D11 device and
-// provides a game loop.
 class Game final : public DX::IDeviceNotify
 {
 public:
@@ -46,6 +44,9 @@ public:
     void GetDefaultSize( int& width, int& height ) const noexcept;
 
     // Globally shared resources
+#ifdef BUILD_DX12
+    std::unique_ptr<DirectX::GraphicsMemory> m_graphicsMemory;
+#endif
     std::unique_ptr<DirectX::AudioEngine>    m_audEngine;
     std::unique_ptr<DirectX::GamePad>        m_gamePad;
     std::unique_ptr<DirectX::Keyboard>       m_keyboard;

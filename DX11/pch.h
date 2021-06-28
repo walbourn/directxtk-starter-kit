@@ -49,6 +49,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include <pix.h>
+
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif

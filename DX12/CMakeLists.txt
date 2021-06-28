@@ -15,16 +15,18 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 
 add_executable(${PROJECT_NAME} WIN32
-    config.h
+    ../Shared/config.h
     d3dx12.h
     DeviceResources.cpp
     DeviceResources.h
-    Game.cpp
-    Game.h
+    ../Shared/Game.cpp
+    ../Shared/Game.h
     Main.cpp
     pch.h
-    StepTimer.h
+    ../Shared/StepTimer.h
 )
+
+target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
@@ -80,8 +82,6 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     endif()
 endif()
 
-if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0A00)
-endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DX12 _UNICODE UNICODE _WIN32_WINNT=0x0A00)
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
