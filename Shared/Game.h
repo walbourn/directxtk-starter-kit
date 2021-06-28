@@ -5,6 +5,7 @@
 #pragma once
 
 #include "DeviceResources.h"
+#include "RenderTexture.h"
 #include "StepTimer.h"
 
 
@@ -45,12 +46,17 @@ public:
 
     // Globally shared resources
 #ifdef BUILD_DX12
-    std::unique_ptr<DirectX::GraphicsMemory> m_graphicsMemory;
+    std::unique_ptr<DirectX::GraphicsMemory>        m_graphicsMemory;
+    std::unique_ptr<DirectX::DescriptorHeap>        m_resourceDescriptors;
+    std::unique_ptr<DirectX::DescriptorHeap>        m_renderDescriptors;
 #endif
-    std::unique_ptr<DirectX::AudioEngine>    m_audEngine;
-    std::unique_ptr<DirectX::GamePad>        m_gamePad;
-    std::unique_ptr<DirectX::Keyboard>       m_keyboard;
-    std::unique_ptr<DirectX::Mouse>          m_mouse;
+    std::unique_ptr<DirectX::AudioEngine>           m_audEngine;
+    std::unique_ptr<DirectX::GamePad>               m_gamePad;
+    std::unique_ptr<DirectX::Keyboard>              m_keyboard;
+    std::unique_ptr<DirectX::Mouse>                 m_mouse;
+
+    std::unique_ptr<DX::RenderTexture>              m_hdrScene;
+    std::unique_ptr<DirectX::ToneMapPostProcess>    m_toneMap;
 
 private:
 
@@ -70,4 +76,18 @@ private:
 
     // Audio control
     bool                                    m_retryAudio;
+
+#ifdef BUILD_DX12
+    enum Descriptors
+    {
+        SceneTex,
+        Count
+    };
+
+    enum RTDescriptors
+    {
+        HDRScene,
+        RTCount
+    };
+#endif
 };

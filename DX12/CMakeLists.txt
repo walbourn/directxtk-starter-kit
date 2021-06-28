@@ -23,6 +23,8 @@ add_executable(${PROJECT_NAME} WIN32
     ../Shared/Game.h
     Main.cpp
     pch.h
+    RenderTexture.h
+    RenderTexture.cpp
     ../Shared/StepTimer.h
 )
 

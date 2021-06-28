@@ -24,6 +24,9 @@
       <Filter>MainLoop</Filter>
     </ClInclude>
     <ClInclude Include="..\Shared\config.h" />
+    <ClInclude Include="RenderTexture.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -35,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="..\Shared\Game.cpp">
       <Filter>MainLoop</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTexture.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
