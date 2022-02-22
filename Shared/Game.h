@@ -38,6 +38,7 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnWindowMoved();
+    void OnDisplayChange();
     void OnWindowSizeChanged(int width, int height);
     void OnNewAudioDevice() noexcept { m_retryAudio = true; }
 

@@ -26,6 +26,7 @@ namespace
 LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX11)";
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+void ExitGame() noexcept;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
 extern "C"
@@ -158,8 +159,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         else
         {
             PAINTSTRUCT ps;
-            (void)BeginPaint(hWnd, &ps);
+            std::ignore = BeginPaint(hWnd, &ps);
             EndPaint(hWnd, &ps);
+        }
+        break;
+
+    case WM_DISPLAYCHANGE:
+        if (game)
+        {
+            game->OnDisplayChange();
         }
         break;
 
