@@ -16,7 +16,7 @@ The projects are for Visual Studio 2019. They make use of [NuGet](https://www.nu
 
 The CMake projects make use of [VC++ Package Manager](https://vcpkg.io/) for required dependencies.
 
-The following package is required for the *DirectX 11* version x86/x64:
+The following package is required for the *DirectX 11* version x86/x64 (in order to support Windows 7):
 
 ```
 vcpkg install directxtk[xaudio2redist]
@@ -36,4 +36,4 @@ vcpkg install directxtk12
 
 > The ``x86-windows``, ``x64-windows``, and ``arm64-windows`` triplets are supported.
 
-The CMakeSettings.json file needs to be updated for the ``cmakeToolchain`` variable to point to the proper location. It defaults to `D:/vcpkg/scripts/buildsystems/vcpkg.cmake`
+The CMakeSettings.json file uses the environment variable ``VCPKG_ROOT`` for the ``cmakeToolchain`` variable to point to the proper location. It should be set to something like ``D:\vcpkg``
