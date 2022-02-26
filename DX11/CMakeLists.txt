@@ -97,10 +97,12 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     endif()
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DX11 _UNICODE UNICODE)
+
 if (VCPKG_TARGET_TRIPLET MATCHES ".*arm64.*")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0A00)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x0A00)
 else()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0601)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x0601)
 endif()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
