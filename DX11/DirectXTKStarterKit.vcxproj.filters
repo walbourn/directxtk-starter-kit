@@ -11,13 +11,13 @@
     <Filter Include="MainLoop">
       <UniqueIdentifier>{61e2c2bc-fd8c-45b3-8c31-74062b873a73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{76466595-103b-453a-b8e0-dc56949e2d00}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="DeviceResources.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Shared\StepTimer.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Shared\Game.h">
@@ -26,6 +26,9 @@
     <ClInclude Include="..\Shared\config.h" />
     <ClInclude Include="RenderTexture.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\StepTimer.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

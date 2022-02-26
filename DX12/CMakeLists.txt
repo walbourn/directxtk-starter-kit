@@ -22,22 +22,28 @@ set(SHARED_SOURCE
     ../Shared/Game.cpp
     ../Shared/Game.h
     ../Shared/Main.cpp
-    ../Shared/StepTimer.h)
+    )
+
+set(SHARED_UTILITY
+    ../Utility/StepTimer.h
+    )
 
 set(DX12_UTILITY
     d3dx12.h
     DeviceResources.cpp
     DeviceResources.h
     RenderTexture.h
-    RenderTexture.cpp)
+    RenderTexture.cpp
+    )
 
 add_executable(${PROJECT_NAME} WIN32
     ${SHARED_SOURCE}
+    ${SHARED_UTILITY}
     ${DX12_UTILITY}
     pch.h
-)
+    )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/)
+target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/ ../Utility/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
