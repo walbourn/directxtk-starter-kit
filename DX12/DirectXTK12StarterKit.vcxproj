@@ -299,7 +299,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Shared\Game.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\Shared\Main.cpp" />
     <ClCompile Include="DeviceResources.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

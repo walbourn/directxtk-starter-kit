@@ -36,14 +36,14 @@
     <ClCompile Include="DeviceResources.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>MainLoop</Filter>
-    </ClCompile>
     <ClCompile Include="..\Shared\Game.cpp">
       <Filter>MainLoop</Filter>
     </ClCompile>
     <ClCompile Include="RenderTexture.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shared\Main.cpp">
+      <Filter>MainLoop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

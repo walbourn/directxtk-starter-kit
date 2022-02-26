@@ -18,7 +18,21 @@ using namespace DirectX;
 
 #pragma warning(disable : 4061)
 
-#ifdef USING_D3D12_AGILITY_SDK
+namespace
+{
+    std::unique_ptr<Game> g_game;
+}
+
+#ifdef BUILD_DX12
+LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX12)";
+#else
+LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX11)";
+#endif
+
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+void ExitGame() noexcept;
+
+#if defined(BUILD_DX12) && defined(USING_D3D12_AGILITY_SDK)
 extern "C"
 {
     // Used to enable the "Agility SDK" components
@@ -27,14 +41,14 @@ extern "C"
 }
 #endif
 
-namespace
+#ifdef BUILD_DX11
+// Indicates to hybrid graphics systems to prefer the discrete part by default
+extern "C"
 {
-    std::unique_ptr<Game> g_game;
+    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
-
-LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX12)";
-
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+#endif
 
 // Entry point
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -45,8 +59,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (!XMVerifyCPUSupport())
         return 1;
 
+#if (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT*/)
+    // Initialize Windows Runtime for Windows.Gaming.Input as well as COM
     Microsoft::WRL::Wrappers::RoInitializeWrapper initialize(RO_INIT_MULTITHREADED);
     if (FAILED(initialize))
+#else // BUILD_DX11
+    HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
+    if (FAILED(hr))
+#endif
         return 1;
 
     g_game = std::make_unique<Game>();
@@ -93,7 +113,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #endif
         ShowWindow(hwnd, nCmdShow);
 
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()) );
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
 
         GetClientRect(hwnd, &rc);
 
@@ -131,6 +151,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         hNewAudio = nullptr;
     }
 
+#ifdef BUILD_DX11
+    CoUninitialize();
+#endif
+
     return static_cast<int>(msg.wParam);
 }
 
@@ -158,8 +182,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         else
         {
             PAINTSTRUCT ps;
-            (void)BeginPaint(hWnd, &ps);
+            std::ignore = BeginPaint(hWnd, &ps);
             EndPaint(hWnd, &ps);
+        }
+        break;
+
+    case WM_DISPLAYCHANGE:
+        if (game)
+        {
+            game->OnDisplayChange();
         }
         break;
 

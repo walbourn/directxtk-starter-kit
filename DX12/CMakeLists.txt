@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 cmake_minimum_required (VERSION 3.13)
 
 project (DirectXTK12StarterKit
@@ -14,18 +17,24 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 
-add_executable(${PROJECT_NAME} WIN32
+set(SHARED_SOURCE
     ../Shared/config.h
+    ../Shared/Game.cpp
+    ../Shared/Game.h
+    ../Shared/Main.cpp
+    ../Shared/StepTimer.h)
+
+set(DX12_UTILITY
     d3dx12.h
     DeviceResources.cpp
     DeviceResources.h
-    ../Shared/Game.cpp
-    ../Shared/Game.h
-    Main.cpp
-    pch.h
     RenderTexture.h
-    RenderTexture.cpp
-    ../Shared/StepTimer.h
+    RenderTexture.cpp)
+
+add_executable(${PROJECT_NAME} WIN32
+    ${SHARED_SOURCE}
+    ${DX12_UTILITY}
+    pch.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/)
