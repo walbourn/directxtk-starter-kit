@@ -30,6 +30,9 @@
     <ClInclude Include="..\Utility\StepTimer.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\Utility\GameComponents.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

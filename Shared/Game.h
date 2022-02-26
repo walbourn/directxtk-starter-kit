@@ -5,6 +5,7 @@
 #pragma once
 
 #include "DeviceResources.h"
+#include "GameComponents.h"
 #include "RenderTexture.h"
 #include "StepTimer.h"
 
@@ -91,4 +92,6 @@ private:
         RTCount
     };
 #endif
+
+    GameComponentCollection                 m_components;
 };

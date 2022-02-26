@@ -12,6 +12,81 @@ using namespace DirectX::SimpleMath;
 
 using Microsoft::WRL::ComPtr;
 
+#if 1
+// TESTTEST - Validate game component
+namespace
+{
+    class TestComponent : public IGameComponent
+    {
+    public:
+        virtual void Initialize(DX::DeviceResources& deviceResources) override
+        {
+            UNREFERENCED_PARAMETER(deviceResources);
+            OutputDebugStringA("TestComponent initalized\n");
+        }
+
+        virtual void Update(DX::StepTimer const& timer) override
+        {
+            UNREFERENCED_PARAMETER(timer);
+            OutputDebugStringA("TestComponent updated\n");
+        }
+    };
+
+    class DrawTestComponent : public IDrawableGameComponent
+    {
+    public:
+        virtual void Initialize(DX::DeviceResources& deviceResources) override
+        {
+            UNREFERENCED_PARAMETER(deviceResources);
+            OutputDebugStringA("DrawTestComponent initalized\n");
+        }
+
+        virtual void Update(DX::StepTimer const& timer) override
+        {
+            UNREFERENCED_PARAMETER(timer);
+            OutputDebugStringA("DrawTestComponent updated\n");
+        }
+
+        virtual void Draw() override
+        {
+            OutputDebugStringA("DrawTestComponent drawn\n");
+        }
+    };
+
+    class DrawTestComponent2 : public IDrawableGameComponent
+    {
+    public:
+        virtual void Initialize(DX::DeviceResources& deviceResources) override
+        {
+            UNREFERENCED_PARAMETER(deviceResources);
+            OutputDebugStringA("DrawTestComponent2 initalized\n");
+        }
+
+        virtual void Update(DX::StepTimer const& timer) override
+        {
+            UNREFERENCED_PARAMETER(timer);
+            OutputDebugStringA("DrawTestComponent2 updated\n");
+        }
+
+        virtual void Draw() override
+        {
+            OutputDebugStringA("DrawTestComponent2 drawn\n");
+        }
+
+        virtual void OnDeviceLost() override
+        {
+            OutputDebugStringA("DrawTestComponent2 device lost\n");
+        }
+
+        virtual void OnDeviceRestored(DX::DeviceResources& deviceResources) override
+        {
+            UNREFERENCED_PARAMETER(deviceResources);
+            OutputDebugStringA("DrawTestComponent2 device lost\n");
+        }
+    };
+}
+#endif
+
 Game::Game() noexcept(false) :
     m_retryAudio(false)
 {
@@ -27,6 +102,12 @@ Game::Game() noexcept(false) :
     XMVECTORF32 color;
     color.v = XMColorSRGBToRGB(Colors::CornflowerBlue);
     m_hdrScene->SetClearColor(color);
+#endif
+
+#if 1
+    m_components.Add<TestComponent>();
+    m_components.Add<DrawTestComponent>();
+    m_components.Add<DrawTestComponent2>();
 #endif
 }
 
@@ -69,6 +150,9 @@ void Game::Initialize(HWND window, int width, int height)
     eflags |= AudioEngine_Debug;
 #endif
     m_audEngine = std::make_unique<AudioEngine>(eflags);
+
+    // Initialize game components
+    m_components.OnInitialize(*m_deviceResources);
 }
 
 #pragma region Frame Update
@@ -101,11 +185,12 @@ void Game::Tick()
 }
 
 // Updates the world.
-void Game::Update(DX::StepTimer const&)
+void Game::Update(DX::StepTimer const&timer)
 {
     PIXBeginEvent(PIX_COLOR_DEFAULT, L"Update");
 
-    // TODO -
+    // Update Game Components
+    m_components.OnUpdate(timer);
 
     PIXEndEvent();
 }
@@ -129,7 +214,9 @@ void Game::Render()
     m_hdrScene->BeginScene(commandList);
 
     Clear();
-    // TODO -
+
+    // Render game components.
+    m_components.OnDraw();
 
     m_hdrScene->EndScene(commandList);
     PIXEndEvent(commandList);
@@ -152,9 +239,10 @@ void Game::Render()
 #else // BUILD_DX11
     Clear();
 
-    auto context = m_deviceResources->GetD3DDeviceContext();
+    // Render game components.
+    m_components.OnDraw();
 
-    // TODO -
+    auto context = m_deviceResources->GetD3DDeviceContext();
 
     auto renderTarget = m_deviceResources->GetRenderTargetView();
     context->OMSetRenderTargets(1, &renderTarget, nullptr);
@@ -322,6 +410,8 @@ void Game::CreateWindowSizeDependentResources()
 
 void Game::OnDeviceLost()
 {
+    m_components.OnDeviceLost();
+
 #ifdef BUILD_DX12
     m_graphicsMemory.reset();
     m_resourceDescriptors.reset();
@@ -336,5 +426,7 @@ void Game::OnDeviceRestored()
     CreateDeviceDependentResources();
 
     CreateWindowSizeDependentResources();
+
+    m_components.OnDeviceRestored(*m_deviceResources);
 }
 #pragma endregion

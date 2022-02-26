@@ -25,6 +25,7 @@ set(SHARED_SOURCE
     )
 
 set(SHARED_UTILITY
+    ../Utility/GameComponents.h
     ../Utility/StepTimer.h
     )
 
