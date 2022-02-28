@@ -82,7 +82,7 @@ void GameComponentCollection::Remove(_In_ IDrawableGameComponent* item)
     }
 }
 
-bool GameComponentCollection::Contains(IGameComponent* item) const noexcept
+bool GameComponentCollection::Contains(_In_ IGameComponent* item) const noexcept
 {
     assert(item != nullptr);
     auto i = std::find(mGameComponents.cbegin(), mGameComponents.cend(), item);

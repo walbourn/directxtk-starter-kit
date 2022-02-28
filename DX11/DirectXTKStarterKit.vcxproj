@@ -181,6 +181,7 @@
     <ClInclude Include="..\Shared\config.h" />
     <ClInclude Include="..\Shared\Game.h" />
     <ClInclude Include="..\Utility\GameComponents.h" />
+    <ClInclude Include="..\Utility\GameServices.h" />
     <ClInclude Include="..\Utility\StepTimer.h" />
     <ClInclude Include="DeviceResources.h" />
     <ClInclude Include="pch.h" />

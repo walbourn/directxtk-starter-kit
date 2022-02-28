@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "DeviceResources.h"
 #include "StepTimer.h"
 
 #include <cassert>
@@ -84,11 +83,10 @@ protected:
 class GameComponentCollection
 {
 public:
-    GameComponentCollection(Game* game) :
-        mGame(game),
+    GameComponentCollection() :
+        mGame(nullptr),
         mDirtyOrder(false)
     {
-        assert(game != nullptr);
     }
 
     GameComponentCollection(GameComponentCollection&&) = default;
@@ -98,8 +96,6 @@ public:
     GameComponentCollection& operator=(const GameComponentCollection&) = delete;
 
     ~GameComponentCollection() { Clear(); }
-
-    size_t Count() const noexcept { return mGameComponents.size(); }
 
     IGameComponent*& operator[](const size_t index) { return mGameComponents[index]; }
 
@@ -139,6 +135,11 @@ public:
 
     void LoadContent();
     void UnloadContent();
+
+    // Properties
+    size_t Count() const noexcept { return mGameComponents.size(); }
+
+    void SetGame(_In_ Game* game) noexcept { mGame = game; }
 
 private:
     Game* mGame;

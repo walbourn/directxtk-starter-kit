@@ -5,6 +5,10 @@
 
 #pragma once
 
+#pragma warning(disable : 4619 4616 26812)
+// C4619/4616 #pragma warning warnings
+// 26812: The enum type 'x' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).
+
 #include <winsdkver.h>
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0601
@@ -50,6 +54,9 @@
 #include <stdexcept>
 #include <system_error>
 #include <tuple>
+#include <typeinfo>
+#include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 #include <pix.h>

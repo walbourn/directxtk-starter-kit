@@ -22,6 +22,19 @@ namespace
         virtual void Initialize() override
         {
             OutputDebugStringA("TestComponent initalized\n");
+
+            if (m_game == nullptr)
+            {
+                OutputDebugStringA("ERROR: TestComponent can't find game!\n");
+                return;
+            }
+
+            auto ae = m_game->GetService<AudioEngine>();
+            if (ae == nullptr)
+            {
+                OutputDebugStringA("ERROR: TestComponent can't get AudioEngine service\n");
+            }
+
         }
 
         virtual void Update(DX::StepTimer const& timer) override
@@ -51,6 +64,18 @@ namespace
 #endif
         {
             OutputDebugStringA("DrawTestComponent drawn\n");
+
+            if (m_game == nullptr)
+            {
+                OutputDebugStringA("ERROR: DrawTestComponent can't find game!\n");
+                return;
+            }
+
+            auto dr = m_game->GetService<DX::DeviceResources>();
+            if (dr == nullptr)
+            {
+                OutputDebugStringA("ERROR: DrawTestComponent can't get DeviceResources service\n");
+            }
         }
     };
 
@@ -91,9 +116,10 @@ namespace
 
 Game::Game() noexcept(false) :
     m_retryAudio(false),
-    m_suppressDraw(false),
-    m_components(this)
+    m_suppressDraw(false)
 {
+    m_components.SetGame(this);
+
     m_deviceResources = std::make_unique<DX::DeviceResources>(
         DXGI_FORMAT_R10G10B10A2_UNORM,
         DXGI_FORMAT_D32_FLOAT,
@@ -158,6 +184,10 @@ void Game::Initialize(HWND window, int width, int height)
     eflags |= AudioEngine_Debug;
 #endif
     m_audEngine = std::make_unique<AudioEngine>(eflags);
+
+    // Add game services
+    m_services.AddService(m_deviceResources.get());
+    m_services.AddService(m_audEngine.get());
 
     // Initialize game
     LoadContent();

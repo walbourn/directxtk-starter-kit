@@ -6,6 +6,7 @@
 
 #include "DeviceResources.h"
 #include "GameComponents.h"
+#include "GameServices.h"
 #include "RenderTexture.h"
 #include "StepTimer.h"
 
@@ -50,23 +51,13 @@ public:
     // Properties
     void GetDefaultSize( int& width, int& height ) const noexcept;
 
-    // Game Services
-    std::unique_ptr<DX::DeviceResources>            m_deviceResources;
-#ifdef BUILD_DX12
-    std::unique_ptr<DirectX::GraphicsMemory>        m_graphicsMemory;
-    std::unique_ptr<DirectX::DescriptorPile>        m_resourceDescriptors;
-    std::unique_ptr<DirectX::DescriptorPile>        m_renderDescriptors;
-#endif
-    std::unique_ptr<DirectX::AudioEngine>           m_audEngine;
-    std::unique_ptr<DirectX::GamePad>               m_gamePad;
-    std::unique_ptr<DirectX::Keyboard>              m_keyboard;
-    std::unique_ptr<DirectX::Mouse>                 m_mouse;
-
-    std::unique_ptr<DX::RenderTexture>              m_hdrScene;
-    std::unique_ptr<DirectX::ToneMapPostProcess>    m_toneMap;
+    template<class T>
+    T* GetService()
+    {
+        return m_services.GetService<T>();
+    }
 
 private:
-
     void Update(DX::StepTimer const& timer);
     void Render();
 
@@ -75,14 +66,32 @@ private:
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 
+    // Device resources.
+    std::unique_ptr<DX::DeviceResources>    m_deviceResources;
+
     // Rendering loop timer.
     DX::StepTimer                           m_timer;
+
+    // Audio device.
+    std::unique_ptr<DirectX::AudioEngine>   m_audEngine;
+
+    // Input devices.
+    std::unique_ptr<DirectX::GamePad>       m_gamePad;
+    std::unique_ptr<DirectX::Keyboard>      m_keyboard;
+    std::unique_ptr<DirectX::Mouse>         m_mouse;
 
     // Private state.
     bool                                    m_retryAudio;
     bool                                    m_suppressDraw;
 
+    // Graphics resources.
+    std::unique_ptr<DX::RenderTexture>              m_hdrScene;
+    std::unique_ptr<DirectX::ToneMapPostProcess>    m_toneMap;
 #ifdef BUILD_DX12
+    std::unique_ptr<DirectX::GraphicsMemory>        m_graphicsMemory;
+    std::unique_ptr<DirectX::DescriptorPile>        m_resourceDescriptors;
+    std::unique_ptr<DirectX::DescriptorPile>        m_renderDescriptors;
+
     enum Descriptors
     {
         SceneTex,
@@ -99,4 +108,5 @@ private:
 #endif
 
     GameComponentCollection                 m_components;
+    GameServiceContainer                    m_services;
 };
