@@ -51,6 +51,9 @@
     <ClCompile Include="..\Shared\Main.cpp">
       <Filter>MainLoop</Filter>
     </ClCompile>
+    <ClCompile Include="..\Utility\GameComponents.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

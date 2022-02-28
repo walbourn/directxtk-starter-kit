@@ -99,11 +99,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #ifdef DEFAULT_FULLSCREEN
         HWND hwnd = CreateWindowExW(WS_EX_TOPMOST, L"StarterKitWindowClass", g_szAppName, WS_POPUP,
             CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-            nullptr);
+            g_game.get());
 #else
         HWND hwnd = CreateWindowExW(0, L"StarterKitWindowClass", g_szAppName, WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-            nullptr);
+            g_game.get());
 #endif
         if (!hwnd)
             return 1;
@@ -112,8 +112,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         nCmdShow = SW_SHOWMAXIMIZED;
 #endif
         ShowWindow(hwnd, nCmdShow);
-
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
 
         GetClientRect(hwnd, &rc);
 
@@ -142,6 +140,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             g_game->Tick();
         }
     }
+
+    g_game->OnExiting();
 
     g_game.reset();
 
@@ -174,6 +174,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
+    case WM_CREATE:
+        if (lParam)
+        {
+            auto pCreateStruct = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+            SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+        }
+        return 0;
+
     case WM_PAINT:
         if (s_in_sizemove && game)
         {
@@ -185,7 +193,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             std::ignore = BeginPaint(hWnd, &ps);
             EndPaint(hWnd, &ps);
         }
-        break;
+        return 0;
 
     case WM_DISPLAYCHANGE:
         if (game)
@@ -247,7 +255,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             info->ptMinTrackSize.x = 320;
             info->ptMinTrackSize.y = 200;
         }
-        break;
+        return 0;
 
     case WM_ACTIVATEAPP:
         if (game)
@@ -263,7 +271,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         Keyboard::ProcessMessage(message, wParam, lParam);
         Mouse::ProcessMessage(message, wParam, lParam);
-        break;
+        return 0;
 
     case WM_POWERBROADCAST:
         switch (wParam)

@@ -25,9 +25,12 @@ public:
 
     // Initialization and management
     void Initialize(HWND window, int width, int height);
+    void LoadContent();
+    void UnloadContent();
 
     // Basic game loop
     void Tick();
+    void SuppressDraw() noexcept { m_suppressDraw = true; }
 
     // IDeviceNotify
     void OnDeviceLost() override;
@@ -41,16 +44,18 @@ public:
     void OnWindowMoved();
     void OnDisplayChange();
     void OnWindowSizeChanged(int width, int height);
+    void OnExiting();
     void OnNewAudioDevice() noexcept { m_retryAudio = true; }
 
     // Properties
     void GetDefaultSize( int& width, int& height ) const noexcept;
 
-    // Globally shared resources
+    // Game Services
+    std::unique_ptr<DX::DeviceResources>            m_deviceResources;
 #ifdef BUILD_DX12
     std::unique_ptr<DirectX::GraphicsMemory>        m_graphicsMemory;
-    std::unique_ptr<DirectX::DescriptorHeap>        m_resourceDescriptors;
-    std::unique_ptr<DirectX::DescriptorHeap>        m_renderDescriptors;
+    std::unique_ptr<DirectX::DescriptorPile>        m_resourceDescriptors;
+    std::unique_ptr<DirectX::DescriptorPile>        m_renderDescriptors;
 #endif
     std::unique_ptr<DirectX::AudioEngine>           m_audEngine;
     std::unique_ptr<DirectX::GamePad>               m_gamePad;
@@ -70,26 +75,26 @@ private:
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 
-    // Device resources.
-    std::unique_ptr<DX::DeviceResources>    m_deviceResources;
-
     // Rendering loop timer.
     DX::StepTimer                           m_timer;
 
-    // Audio control
+    // Private state.
     bool                                    m_retryAudio;
+    bool                                    m_suppressDraw;
 
 #ifdef BUILD_DX12
     enum Descriptors
     {
         SceneTex,
-        Count
+        Reserve,
+        Count = 128
     };
 
     enum RTDescriptors
     {
         HDRScene,
-        RTCount
+        RTReserve,
+        RTCount = 64
     };
 #endif
 

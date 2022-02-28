@@ -7,28 +7,44 @@
 #include "DeviceResources.h"
 #include "StepTimer.h"
 
-#include <algorithm>
 #include <cassert>
-#include <stdexcept>
 #include <utility>
 #include <vector>
 
+
+class Game;
 
 // An abstract base class for game components
 class IGameComponent
 {
 public:
-    virtual ~IGameComponent() {}
+    IGameComponent(IGameComponent&&) = default;
+    IGameComponent& operator= (IGameComponent&&) = default;
 
-    virtual void Initialize(DX::DeviceResources& deviceResources) = 0;
+    IGameComponent(IGameComponent const&) = default;
+    IGameComponent& operator= (IGameComponent const&) = default;
+
+    virtual ~IGameComponent() = default;
+
+    virtual void Initialize() = 0;
 
     virtual void Update(DX::StepTimer const& timer) = 0;
 
+    // Properties
     bool m_enabled;
     int m_order;
 
+    void SetGame(_In_ Game* game) noexcept { m_game = game; }
+
 protected:
-    IGameComponent() : m_enabled(true), m_order(0) {}
+    Game* m_game;
+
+    IGameComponent() :
+        m_enabled(true),
+        m_order(0),
+        m_game(nullptr)
+    {
+    }
 };
 
 
@@ -36,16 +52,31 @@ protected:
 class IDrawableGameComponent : public IGameComponent
 {
 public:
-    virtual void Draw() = 0;
+    IDrawableGameComponent(IDrawableGameComponent&&) = default;
+    IDrawableGameComponent& operator= (IDrawableGameComponent&&) = default;
 
-    virtual void OnDeviceLost() {}
+    IDrawableGameComponent(IDrawableGameComponent const&) = default;
+    IDrawableGameComponent& operator= (IDrawableGameComponent const&) = default;
 
-    virtual void OnDeviceRestored(DX::DeviceResources& deviceResources) { UNREFERENCED_PARAMETER(deviceResources); }
+#ifdef BUILD_DX12
+    virtual void Draw(_In_ ID3D12GraphicsCommandList* commandList) = 0;
+#else
+    virtual void Draw(_In_ ID3D11DeviceContext* context) = 0;
+#endif
 
+    virtual void LoadGraphicsContent() {}
+
+    virtual void UnloadGraphicsContent() {}
+
+    // Properties
     bool m_hidden;
 
 protected:
-    IDrawableGameComponent() : IGameComponent(), m_hidden(false) {}
+    IDrawableGameComponent() :
+        IGameComponent(),
+        m_hidden(false)
+    {
+    }
 };
 
 
@@ -53,7 +84,12 @@ protected:
 class GameComponentCollection
 {
 public:
-    GameComponentCollection() : mDirtyOrder(false) {}
+    GameComponentCollection(Game* game) :
+        mGame(game),
+        mDirtyOrder(false)
+    {
+        assert(game != nullptr);
+    }
 
     GameComponentCollection(GameComponentCollection&&) = default;
     GameComponentCollection& operator=(GameComponentCollection&&) = default;
@@ -67,34 +103,8 @@ public:
 
     IGameComponent*& operator[](const size_t index) { return mGameComponents[index]; }
 
-    void Add(IGameComponent* item)
-    {
-        for (auto i : mGameComponents)
-        {
-            if (item == i)
-            {
-                throw std::runtime_error("Cannot add the same game component more than once");
-            }
-        }
-
-        mGameComponents.push_back(item);
-        mDirtyOrder = true;
-    }
-
-    void Add(IDrawableGameComponent* item)
-    {
-        for (auto i : mDrawableComponents)
-        {
-            if (item == i)
-            {
-                throw std::runtime_error("Cannot add the same game component more than once");
-            }
-        }
-
-        mGameComponents.push_back(item);
-        mDrawableComponents.push_back(item);
-        mDirtyOrder = true;
-    }
+    void Add(_In_ IGameComponent* item);
+    void Add(_In_ IDrawableGameComponent* item);
 
     template<class T, class... Args>
     void Add(Args&&... args)
@@ -103,112 +113,35 @@ public:
         Add(ptr);
     }
 
-    void Remove(IGameComponent* item)
-    {
-        auto i = std::find(mGameComponents.begin(), mGameComponents.end(), item);
+    void Remove(_In_ IGameComponent* item);
+    void Remove(_In_ IDrawableGameComponent* item);
 
-        if (i != mGameComponents.cend())
-        {
-            auto ptr = *i;
-            mGameComponents.erase(i);
-            delete ptr;
-        }
-    }
+    bool Contains(_In_ IGameComponent* item) const noexcept;
 
-    void Remove(IDrawableGameComponent* item)
-    {
-        auto i = std::find(mGameComponents.begin(), mGameComponents.end(), item);
-
-        if (i != mGameComponents.cend())
-        {
-            auto ptr = *i;
-            mGameComponents.erase(i);
-
-            auto j = std::find(mDrawableComponents.begin(), mDrawableComponents.end(), item);
-            if (j != mDrawableComponents.cend())
-            {
-                mDrawableComponents.erase(j);
-            }
-
-            delete ptr;
-        }
-    }
-
-    bool Contains(IGameComponent* item) const noexcept
-    {
-        auto i = std::find(mGameComponents.cbegin(), mGameComponents.cend(), item);
-        return (i != mGameComponents.cend());
-    }
-
-    void Clear()
-    {
-        for (auto i : mGameComponents)
-        {
-            delete i;
-        }
-
-        mGameComponents.clear();
-        mDrawableComponents.clear();
-    }
+    void Clear();
 
     void OrderChanged() noexcept { mDirtyOrder = true; }
 
-    void OnInitialize(DX::DeviceResources& deviceResources)
-    {
-        for (auto i : mGameComponents)
-        {
-            i->Initialize(deviceResources);
-        }
-    }
+    void Initialize();
+    void Update(DX::StepTimer const& timer);
 
-    void OnUpdate(DX::StepTimer const& timer)
-    {
-        if (mDirtyOrder)
-        {
-            mDirtyOrder = false;
-
-            std::stable_sort(mGameComponents.begin(), mGameComponents.end(),
-                [](const IGameComponent* item1, const IGameComponent* item2) -> bool
-                {
-                    return item1->m_order < item2->m_order;
-                });
-        }
-
-        for (auto i : mGameComponents)
-        {
-            if (i->m_enabled)
-                i->Update(timer);
-        }
-    }
-
-    void OnDraw()
+    template<class T>
+    void Draw(T* list)
     {
         for (auto i : mDrawableComponents)
         {
             if (i->m_hidden)
                 continue;
 
-            i->Draw();
+            i->Draw(list);
         }
     }
 
-    void OnDeviceLost()
-    {
-        for (auto i : mDrawableComponents)
-        {
-            i->OnDeviceLost();
-        }
-    }
-
-    void OnDeviceRestored(DX::DeviceResources& deviceResources)
-    {
-        for (auto i : mDrawableComponents)
-        {
-            i->OnDeviceRestored(deviceResources);
-        }
-    }
+    void LoadContent();
+    void UnloadContent();
 
 private:
+    Game* mGame;
     bool mDirtyOrder;
 
     std::vector<IGameComponent*> mGameComponents;
