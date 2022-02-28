@@ -4,18 +4,10 @@
 
 #pragma once
 
-#if !defined(_CPPRTTI) && !defined(__GXX_RTTI)
-#error GameServices requires RTTI
-#endif
-
-#include <cassert>
-#include <stdexcept>
 #include <typeinfo>
 #include <typeindex>
 #include <unordered_map>
 
-
-class Game;
 
 // A class for handling the collection of game services
 //
@@ -33,19 +25,7 @@ public:
 
     ~GameServiceContainer() { Clear(); }
 
-    void AddService(const std::type_info& type, _In_ void* provider)
-    {
-        assert(provider != nullptr);
-
-        auto const& ti = std::type_index(type);
-
-        if (mServices.find(ti) != mServices.end())
-        {
-            throw std::runtime_error("Can't add the same service more than once");
-        }
-
-        mServices[ti] = provider;
-    }
+    void AddService(const std::type_info& type, _In_ void* provider);
 
     template<class T>
     void AddService(T* provider)
@@ -53,30 +33,22 @@ public:
         AddService(typeid(T), provider);
     }
 
-    void RemoveService(const std::type_info& type)
+    void RemoveService(const std::type_info& type);
+
+    template<class T>
+    void RemoveService(T*)
     {
-        auto it = mServices.find(std::type_index(type));
-        mServices.erase(it);
+        RemoteService(typeid(T));
     }
 
-    void* GetService(const std::type_info& type) const
-    {
-        auto it = mServices.find(std::type_index(type));
-        if (it == mServices.end())
-            return nullptr;
+    void Clear();
 
-        return it->second;
-    }
+    void* GetService(const std::type_info& type) const;
 
     template<class T>
     T* GetService()
     {
         return static_cast<T*>(GetService(typeid(T)));
-    }
-
-    void Clear()
-    {
-        mServices.clear();
     }
 
 private:

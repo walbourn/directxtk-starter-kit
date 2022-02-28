@@ -28,6 +28,7 @@ set(SHARED_UTILITY
     ../Utility/GameComponents.h
     ../Utility/GameComponents.cpp
     ../Utility/GameServices.h
+    ../Utility/GameServices.cpp
     ../Utility/StepTimer.h
     )
 

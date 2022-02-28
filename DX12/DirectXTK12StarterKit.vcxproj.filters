@@ -57,6 +57,9 @@
     <ClCompile Include="..\Utility\GameComponents.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\Utility\GameServices.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
