@@ -17,6 +17,18 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 
+if (DEFINED VCPKG_TARGET_ARCHITECTURE)
+    set(DIRECTX_ARCH ${VCPKG_TARGET_ARCHITECTURE})
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Ww][Ii][Nn]32$")
+    set(DIRECTX_ARCH x86)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Xx]64$")
+    set(DIRECTX_ARCH x64)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]$")
+    set(DIRECTX_ARCH arm)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64$")
+    set(DIRECTX_ARCH arm64)
+endif()
+
 set(SHARED_SOURCE
     ../Shared/config.h
     ../Shared/Game.cpp
@@ -49,8 +61,6 @@ add_executable(${PROJECT_NAME} WIN32
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/ ../Utility/)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
-
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16")
     target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h )
 endif()
@@ -63,15 +73,19 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     runtimeobject.lib
 )
 
-target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT)
-
 if(MSVC)
     # Use max Warning Level 
     string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
     string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
-    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast)
+    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
+    target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT)
+
+    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "arm"))
+        target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
+        target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
+    endif()
 endif()
 
 find_package(directx-headers CONFIG REQUIRED)
@@ -98,11 +112,23 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
         target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
     endif()
 
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
+        target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    endif()
+
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
         target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor /wd5105)
     endif()
+
+    if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.27) AND (NOT (${DIRECTX_ARCH} MATCHES "arm(64)?")))
+        target_link_options(meshconvert PRIVATE /CETCOMPAT)
+    endif()
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DX12 _UNICODE UNICODE _WIN32_WINNT=0x0A00)
+target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DX12)
+
+if (WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0A00)
+endif()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
