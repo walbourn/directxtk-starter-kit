@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required (VERSION 3.20)
 
 project (DirectXTKStarterKit
   DESCRIPTION "DirectX Tool Kit for DX11 Starter Kit"
@@ -16,6 +16,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
+
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
 
 if (DEFINED VCPKG_TARGET_ARCHITECTURE)
     set(DIRECTX_ARCH ${VCPKG_TARGET_ARCHITECTURE})
@@ -60,9 +62,7 @@ add_executable(${PROJECT_NAME} WIN32
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/ ../Utility/)
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16")
-    target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h )
-endif()
+target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     d3d11.lib dxgi.lib dxguid.lib uuid.lib
@@ -72,25 +72,35 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 if(MSVC)
-    # Use max Warning Level 
-    string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-    string(REPLACE "/W3 " "/Wall " CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+    target_compile_options(${PROJECT_NAME} PRIVATE /Wall /GR /fp:fast "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
+    target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>" /DYNAMICBASE /NXCOMPAT)
 
-    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
-    target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT)
-
-    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "arm"))
-        target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
+    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "^arm"))
         target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
     endif()
+
+    if((MSVC_VERSION GREATER_EQUAL 1928) AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
+       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)))
+        target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
+        target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
+    endif()
+endif()
+
+if(NOT ${DIRECTX_ARCH} MATCHES "^arm")
+    if (${CMAKE_SIZEOF_VOID_P} EQUAL "4")
+        set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
+    else()
+        set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
+    endif()
+
+    target_compile_options(${PROJECT_NAME} PRIVATE ${ARCH_SSE2})
 endif()
 
 find_package(directxmath CONFIG REQUIRED)
 find_package(directxtk CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectXMath Microsoft::DirectXTK)
 
-if (NOT (${DIRECTX_ARCH} MATCHES "arm(64)?"))
+if (NOT (${DIRECTX_ARCH} MATCHES "^arm"))
   target_compile_definitions(${PROJECT_NAME} PRIVATE USING_XAUDIO2_REDIST)
   if (NOT EXISTS "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/xaudio2redist/xaudio2.h")
     message(FATAL_ERROR "VCPKG port 'xaudio2redist' required for DirectX Tool Kit for Audio on Windows 7")
@@ -109,7 +119,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     target_compile_options(${PROJECT_NAME} PRIVATE
-         /permissive- /Zc:__cplusplus
+         /sdl /permissive- /Zc:__cplusplus
          "/wd4061" "/wd4365" "/wd4514" "/wd4571" "/wd4668" "/wd4710" "/wd4820" "/wd5039" "/wd5045")
 
     if(ENABLE_CODE_ANALYSIS)
@@ -124,8 +134,12 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
          target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor /wd5105)
     endif()
 
-    if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.27) AND (NOT (${DIRECTX_ARCH} MATCHES "arm(64)?")))
-        target_link_options(meshconvert PRIVATE /CETCOMPAT)
+    if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.27) AND (NOT (${DIRECTX_ARCH} MATCHES "^arm")))
+        target_link_options(${PROJECT_NAME} PRIVATE /CETCOMPAT)
+    endif()
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.34)
+        target_compile_options(${PROJECT_NAME} PRIVATE /wd5262 /wd5264)
     endif()
 endif()
 
@@ -134,7 +148,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DX11)
 if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE)
 
-    if (${DIRECTX_ARCH} MATCHES "arm(64)?")
+    if (${DIRECTX_ARCH} MATCHES "^arm")
         target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x0A00)
     else()
         target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x0601)

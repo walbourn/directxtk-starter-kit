@@ -41,16 +41,18 @@
 #ifdef USING_DIRECTX_HEADERS
 #include <directx/dxgiformat.h>
 #include <directx/d3d12.h>
+#include <directx/d3dx12.h>
+#include <dxguids/dxguids.h>
 #else
 #include <d3d12.h>
+
+#include "d3dx12.h"
 #endif
 
 #include <dxgi1_6.h>
 
 #include <DirectXMath.h>
 #include <DirectXColors.h>
-
-#include "d3dx12.h"
 
 #include <algorithm>
 #include <cmath>
@@ -110,7 +112,7 @@ namespace DX
     public:
         com_exception(HRESULT hr) noexcept : result(hr) {}
 
-        const char* what() const override
+        const char* what() const noexcept override
         {
             static char s_str[64] = {};
             sprintf_s(s_str, "Failure with HRESULT of %08X", static_cast<unsigned int>(result));
