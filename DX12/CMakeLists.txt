@@ -77,11 +77,17 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /Wall /GR /fp:fast "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
     target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>" /DYNAMICBASE /NXCOMPAT)
 
-    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "^arm"))
+    if((CMAKE_SIZEOF_VOID_P EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "^arm"))
         target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
     endif()
 
-    if((MSVC_VERSION GREATER_EQUAL 1928) AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if((MSVC_VERSION GREATER_EQUAL 1924)
+       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)))
+      target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    endif()
+
+    if((MSVC_VERSION GREATER_EQUAL 1928)
+       AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
        AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)))
         target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
         target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
@@ -89,7 +95,7 @@ if(MSVC)
 endif()
 
 if(NOT ${DIRECTX_ARCH} MATCHES "^arm")
-    if (${CMAKE_SIZEOF_VOID_P} EQUAL "4")
+    if (CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
     else()
         set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
@@ -111,8 +117,10 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         "-Wno-exit-time-destructors" "-Wno-global-constructors" "-Wno-language-extension-token"
         "-Wno-missing-prototypes" "-Wno-missing-variable-declarations" "-Wno-reserved-id-macro"
         "-Wno-float-equal" "-Wno-switch-enum" "-Wno-tautological-type-limit-compare")
-endif()
-if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-unsafe-buffer-usage")
+    endif()
+elseif ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     target_compile_options(${PROJECT_NAME} PRIVATE
          /sdl /permissive- /Zc:__cplusplus /Zc:inline
          "/wd4061" "/wd4365" "/wd4514" "/wd4571" "/wd4668" "/wd4710" "/wd4820" "/wd5039" "/wd5045"
@@ -122,8 +130,8 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
         target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
     endif()
 
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
-        target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Gy /Gw)
     endif()
 
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
@@ -140,6 +148,10 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
 
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.34)
         target_compile_options(${PROJECT_NAME} PRIVATE /wd5262 /wd5264)
+    endif()
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:templateScope /Zc:checkGwOdr)
     endif()
 endif()
 
