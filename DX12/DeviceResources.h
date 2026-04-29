@@ -74,13 +74,25 @@ namespace DX
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE GetRenderTargetView() const noexcept
         {
-            return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-                m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-                static_cast<INT>(m_backBufferIndex), m_rtvDescriptorSize);
+        #ifdef __MINGW32__
+            D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+            std::ignore = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&cpuHandle);
+        #else
+            const auto cpuHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        #endif
+
+            return CD3DX12_CPU_DESCRIPTOR_HANDLE(cpuHandle, static_cast<INT>(m_backBufferIndex), m_rtvDescriptorSize);
         }
         CD3DX12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const noexcept
         {
-            return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+        #ifdef __MINGW32__
+            D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+            std::ignore = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&cpuHandle);
+        #else
+            const auto cpuHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        #endif
+
+            return CD3DX12_CPU_DESCRIPTOR_HANDLE(cpuHandle);
         }
 
     private:
@@ -98,7 +110,7 @@ namespace DX
         Microsoft::WRL::ComPtr<ID3D12CommandAllocator>      m_commandAllocators[MAX_BACK_BUFFER_COUNT];
 
         // Swap chain objects.
-        Microsoft::WRL::ComPtr<IDXGIFactory4>               m_dxgiFactory;
+        Microsoft::WRL::ComPtr<IDXGIFactory6>               m_dxgiFactory;
         Microsoft::WRL::ComPtr<IDXGISwapChain3>             m_swapChain;
         Microsoft::WRL::ComPtr<ID3D12Resource>              m_renderTargets[MAX_BACK_BUFFER_COUNT];
         Microsoft::WRL::ComPtr<ID3D12Resource>              m_depthStencil;

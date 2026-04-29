@@ -98,6 +98,7 @@ void DeviceResources::CreateDeviceResources()
             OutputDebugStringA("WARNING: Direct3D Debug Device is not available\n");
         }
 
+    #ifndef __MINGW32__
         ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
         if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
         {
@@ -115,6 +116,7 @@ void DeviceResources::CreateDeviceResources()
             filter.DenyList.pIDList = hide;
             dxgiInfoQueue->AddStorageFilterEntries(DXGI_DEBUG_DXGI, &filter);
         }
+    #endif // __MINGW32__
     }
 #endif
 
@@ -125,13 +127,7 @@ void DeviceResources::CreateDeviceResources()
     {
         BOOL allowTearing = FALSE;
 
-        ComPtr<IDXGIFactory5> factory5;
-        HRESULT hr = m_dxgiFactory.As(&factory5);
-        if (SUCCEEDED(hr))
-        {
-            hr = factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
-        }
-
+        HRESULT hr = m_dxgiFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
         if (FAILED(hr) || !allowTearing)
         {
             m_options &= ~c_AllowTearing;
@@ -373,9 +369,14 @@ void DeviceResources::CreateWindowSizeDependentResources()
         rtvDesc.Format = m_backBufferFormat;
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(
-            m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-            static_cast<INT>(n), m_rtvDescriptorSize);
+    #ifdef __MINGW32__
+        D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+        std::ignore = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&cpuHandle);
+    #else
+        const auto cpuHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    #endif
+
+        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(cpuHandle, static_cast<INT>(n), m_rtvDescriptorSize);
         m_d3dDevice->CreateRenderTargetView(m_renderTargets[n].Get(), &rtvDesc, rtvDescriptor);
     }
 
@@ -392,15 +393,12 @@ void DeviceResources::CreateWindowSizeDependentResources()
             m_depthBufferFormat,
             backBufferWidth,
             backBufferHeight,
-            1, // This depth stencil view has only one texture.
+            1, // Use a single array entry.
             1  // Use a single mipmap level.
             );
         depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-        D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-        depthOptimizedClearValue.Format = m_depthBufferFormat;
-        depthOptimizedClearValue.DepthStencil.Depth = (m_options & c_ReverseDepth) ? 0.0f : 1.0f;
-        depthOptimizedClearValue.DepthStencil.Stencil = 0;
+        const CD3DX12_CLEAR_VALUE depthOptimizedClearValue(m_depthBufferFormat, (m_options & c_ReverseDepth) ? 0.0f : 1.0f, 0u);
 
         ThrowIfFailed(m_d3dDevice->CreateCommittedResource(
             &depthHeapProperties,
@@ -417,7 +415,14 @@ void DeviceResources::CreateWindowSizeDependentResources()
         dsvDesc.Format = m_depthBufferFormat;
         dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
-        m_d3dDevice->CreateDepthStencilView(m_depthStencil.Get(), &dsvDesc, m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    #ifdef __MINGW32__
+        D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+        std::ignore = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&cpuHandle);
+    #else
+        const auto cpuHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    #endif
+
+        m_d3dDevice->CreateDepthStencilView(m_depthStencil.Get(), &dsvDesc, cpuHandle);
     }
 
     // Set the 3D rendering viewport and scissor rectangle to target the entire window.
@@ -438,8 +443,8 @@ void DeviceResources::SetWindow(HWND window, int width, int height) noexcept
     m_window = window;
 
     m_outputSize.left = m_outputSize.top = 0;
-    m_outputSize.right = width;
-    m_outputSize.bottom = height;
+    m_outputSize.right = static_cast<long>(width);
+    m_outputSize.bottom = static_cast<long>(height);
 }
 
 // This method is called when the Win32 window changes size.
@@ -450,8 +455,8 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
 
     RECT newRc;
     newRc.left = newRc.top = 0;
-    newRc.right = width;
-    newRc.bottom = height;
+    newRc.right = static_cast<long>(width);
+    newRc.bottom = static_cast<long>(height);
     if (newRc.right == m_outputSize.right && newRc.bottom == m_outputSize.bottom)
     {
         // Handle color space settings for HDR
@@ -489,7 +494,7 @@ void DeviceResources::HandleDeviceLost()
     m_d3dDevice.Reset();
     m_dxgiFactory.Reset();
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__MINGW32__)
     {
         ComPtr<IDXGIDebug1> dxgiDebug;
         if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
@@ -630,66 +635,31 @@ void DeviceResources::GetAdapter(IDXGIAdapter1** ppAdapter)
 
     ComPtr<IDXGIAdapter1> adapter;
 
-    ComPtr<IDXGIFactory6> factory6;
-    HRESULT hr = m_dxgiFactory.As(&factory6);
-    if (SUCCEEDED(hr))
+    for (UINT adapterIndex = 0;
+        SUCCEEDED(m_dxgiFactory->EnumAdapterByGpuPreference(
+            adapterIndex,
+            DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+            IID_PPV_ARGS(adapter.ReleaseAndGetAddressOf())));
+        adapterIndex++)
     {
-        for (UINT adapterIndex = 0;
-            SUCCEEDED(factory6->EnumAdapterByGpuPreference(
-                adapterIndex,
-                DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-                IID_PPV_ARGS(adapter.ReleaseAndGetAddressOf())));
-            adapterIndex++)
+        DXGI_ADAPTER_DESC1 desc;
+        ThrowIfFailed(adapter->GetDesc1(&desc));
+
+        if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
         {
-            DXGI_ADAPTER_DESC1 desc;
-            ThrowIfFailed(adapter->GetDesc1(&desc));
-
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                continue;
-            }
-
-            // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), m_d3dMinFeatureLevel, __uuidof(ID3D12Device), nullptr)))
-            {
-#ifdef _DEBUG
-                wchar_t buff[256] = {};
-                swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
-                OutputDebugStringW(buff);
-#endif
-                break;
-            }
+            // Don't select the Basic Render Driver adapter.
+            continue;
         }
-    }
 
-    if (!adapter)
-    {
-        for (UINT adapterIndex = 0;
-            SUCCEEDED(m_dxgiFactory->EnumAdapters1(
-                adapterIndex,
-                adapter.ReleaseAndGetAddressOf()));
-            ++adapterIndex)
+        // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
+        if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), m_d3dMinFeatureLevel, __uuidof(ID3D12Device), nullptr)))
         {
-            DXGI_ADAPTER_DESC1 desc;
-            ThrowIfFailed(adapter->GetDesc1(&desc));
-
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                continue;
-            }
-
-            // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), m_d3dMinFeatureLevel, __uuidof(ID3D12Device), nullptr)))
-            {
 #ifdef _DEBUG
-                wchar_t buff[256] = {};
-                swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
-                OutputDebugStringW(buff);
+            wchar_t buff[256] = {};
+            swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
+            OutputDebugStringW(buff);
 #endif
-                break;
-            }
+            break;
         }
     }
 

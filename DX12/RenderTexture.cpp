@@ -10,7 +10,7 @@
 #include "pch.h"
 #include "RenderTexture.h"
 
-#include "DirectXHelpers.h"
+#include "directxtk12/DirectXHelpers.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -20,6 +20,12 @@ using namespace DirectX;
 using namespace DX;
 
 using Microsoft::WRL::ComPtr;
+
+#ifdef __MINGW32__
+#define DX_CONSTEXPR const
+#else
+#define DX_CONSTEXPR constexpr
+#endif
 
 RenderTexture::RenderTexture(DXGI_FORMAT format) noexcept :
     m_state(D3D12_RESOURCE_STATE_COMMON),
@@ -53,12 +59,12 @@ void RenderTexture::SetDevice(_In_ ID3D12Device* device,
             throw std::runtime_error("CheckFeatureSupport");
         }
 
-        constexpr UINT required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
+        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
         if ((formatSupport.Support1 & required) != required)
         {
 #ifdef _DEBUG
             char buff[128] = {};
-            sprintf_s(buff, "RenderTexture: Device does not support the requested format (%u)!\n", m_format);
+            sprintf_s(buff, "RenderTexture: Device does not support the requested format (%d)!\n", m_format);
             OutputDebugStringA(buff);
 #endif
             throw std::runtime_error("RenderTexture");
@@ -91,7 +97,7 @@ void RenderTexture::SizeResources(size_t width, size_t height)
 
     m_width = m_height = 0;
 
-    auto const heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
     const D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(m_format,
         static_cast<UINT64>(width),
@@ -144,8 +150,8 @@ void RenderTexture::TransitionTo(_In_ ID3D12GraphicsCommandList* commandList,
 void RenderTexture::SetWindow(const RECT& output)
 {
     // Determine the render target size in pixels.
-    auto const width = size_t(std::max<LONG>(output.right - output.left, 1));
-    auto const height = size_t(std::max<LONG>(output.bottom - output.top, 1));
+    const auto width = size_t(std::max<LONG>(output.right - output.left, 1));
+    const auto height = size_t(std::max<LONG>(output.bottom - output.top, 1));
 
     SizeResources(width, height);
 }

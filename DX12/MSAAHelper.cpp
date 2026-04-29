@@ -24,6 +24,12 @@ using namespace DX;
 
 using Microsoft::WRL::ComPtr;
 
+#ifdef __MINGW32__
+#define DX_CONSTEXPR const
+#else
+#define DX_CONSTEXPR constexpr
+#endif
+
 MSAAHelper::MSAAHelper(DXGI_FORMAT backBufferFormat,
     DXGI_FORMAT depthBufferFormat,
     unsigned int sampleCount) noexcept(false) :
@@ -61,20 +67,21 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
             throw std::exception();
         }
 
-        constexpr UINT required = D3D12_FORMAT_SUPPORT1_RENDER_TARGET
+        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_RENDER_TARGET
             | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RESOLVE
             | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport.Support1 & required) != required)
         {
 #ifdef _DEBUG
             char buff[128] = {};
-            sprintf_s(buff, "MSAAHelper: Device does not support MSAA for requested backbuffer format (%u)!\n", m_backBufferFormat);
+            sprintf_s(buff, "MSAAHelper: Device does not support MSAA for requested backbuffer format (%d)!\n", m_backBufferFormat);
             OutputDebugStringA(buff);
 #endif
             throw std::exception();
         }
     }
 
+    if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
         D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport = { m_depthBufferFormat, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
         if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport))))
@@ -82,13 +89,13 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
             throw std::exception();
         }
 
-        constexpr UINT required = D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL
+        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL
             | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport.Support1 & required) != required)
         {
 #ifdef _DEBUG
             char buff[128] = {};
-            sprintf_s(buff, "MSAAHelper: Device does not support MSAA for requested depth/stencil format (%u)!\n", m_depthBufferFormat);
+            sprintf_s(buff, "MSAAHelper: Device does not support MSAA for requested depth/stencil format (%d)!\n", m_depthBufferFormat);
             OutputDebugStringA(buff);
 #endif
             throw std::exception();
@@ -186,9 +193,16 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
     rtvDesc.Format = m_backBufferFormat;
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
 
+#if defined(_MSC_VER) || !defined(_WIN32)
+    auto hCPU = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+#else
+    D3D12_CPU_DESCRIPTOR_HANDLE hCPU;
+    std::ignore = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
+#endif
+
     m_device->CreateRenderTargetView(
         m_msaaRenderTarget.Get(), &rtvDesc,
-        m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+        hCPU);
 
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
@@ -221,9 +235,15 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
         dsvDesc.Format = m_depthBufferFormat;
         dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
 
+#if defined(_MSC_VER) || !defined(_WIN32)
+        hCPU = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+#else
+        std::ignore = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
+#endif
+
         m_device->CreateDepthStencilView(
             m_msaaDepthStencil.Get(), &dsvDesc,
-            m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+            hCPU);
     }
 
     m_width = width;
@@ -286,11 +306,24 @@ void MSAAHelper::Resolve(_In_ ID3D12GraphicsCommandList* commandList,
 }
 
 
+void MSAAHelper::Transition(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+{
+    if (beforeState != afterState)
+    {
+        const D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            m_msaaRenderTarget.Get(),
+            beforeState,
+            afterState);
+        commandList->ResourceBarrier(1, &barrier);
+    }
+}
+
+
 void MSAAHelper::SetWindow(const RECT& output)
 {
     // Determine the render target size in pixels.
-    auto const width = size_t(std::max<LONG>(output.right - output.left, 1));
-    auto const height = size_t(std::max<LONG>(output.bottom - output.top, 1));
+    const auto width = size_t(std::max<LONG>(output.right - output.left, 1));
+    const auto height = size_t(std::max<LONG>(output.bottom - output.top, 1));
 
     SizeResources(width, height);
 }

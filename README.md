@@ -4,33 +4,13 @@ This repo contains a 'starter kit' project the [DirectX Tool Kit for DirectX 11]
 
 ## Visual Studio
 
-The projects are for Visual Studio 2019. They make use of [NuGet](https://www.nuget.org/) for the required dependencies.
+The projects are for Visual Studio 2022 using the [VC++ Package Manager](https://vcpkg.io/) for required dependencies via **Microsoft.VisualStudio.Component.vcpkg**. This requires Visual Studio 2022 v17.6 or later.
 
 ## CMake
 
 The CMake projects make use of [VC++ Package Manager](https://vcpkg.io/) for required dependencies.
 
-The following package is required for the *DirectX 11* version x86/x64 (in order to support Windows 7):
-
-```
-vcpkg install directxtk[xaudio2redist]
-```
-
-The following package is required for the *DirectX 11* version ARM64:
-
-```
-vcpkg install directxtk[xaudio2-9]
-```
-
-The following package is required for the *DirectX 12* version:
-
-```
-vcpkg install directxtk12
-```
-
-> The ``x86-windows``, ``x64-windows``, and ``arm64-windows`` triplets are supported.
-
-The **CMakeSettings.json** file uses the environment variable ``VCPKG_ROOT`` for the ``cmakeToolchain`` variable to point to the proper location. It should be set to something like ``D:\vcpkg``
+The **CMakeSettings.json** file uses the environment variable ``VCPKG_ROOT`` for the ``toolchainFile`` variable to point to the proper location. It should be set to something like ``D:\vcpkg``
 
 ## Directories
 

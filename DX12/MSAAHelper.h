@@ -13,6 +13,9 @@
 
 #include <wrl/client.h>
 
+#include <tuple>
+
+
 namespace DX
 {
     class MSAAHelper
@@ -41,6 +44,8 @@ namespace DX
             D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RENDER_TARGET,
             D3D12_RESOURCE_STATES afterState = D3D12_RESOURCE_STATE_PRESENT);
 
+        void Transition(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
+
         void SetWindow(const RECT& rect);
 
         ID3D12Resource* GetMSAARenderTarget() const noexcept { return m_msaaRenderTarget.Get(); }
@@ -48,11 +53,23 @@ namespace DX
 
         D3D12_CPU_DESCRIPTOR_HANDLE GetMSAARenderTargetView() const noexcept
         {
+#if defined(_MSC_VER) || !defined(_WIN32)
             return m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+#else
+            D3D12_CPU_DESCRIPTOR_HANDLE hCPU;
+            std::ignore = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
+            return hCPU;
+#endif
         }
         D3D12_CPU_DESCRIPTOR_HANDLE GetMSAADepthStencilView() const noexcept
         {
+#if defined(_MSC_VER) || !defined(_WIN32)
             return m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+#else
+            D3D12_CPU_DESCRIPTOR_HANDLE hCPU;
+            std::ignore = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
+            return hCPU;
+#endif
         }
 
         void SetClearColor(DirectX::FXMVECTOR color)

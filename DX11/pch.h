@@ -11,7 +11,7 @@
 
 #include <winsdkver.h>
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0601
+#define _WIN32_WINNT 0x0A00
 #endif
 #include <sdkddkver.h>
 
@@ -36,6 +36,7 @@
 #include <Windows.h>
 
 #include <wrl/client.h>
+#include <wrl/event.h>
 
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
@@ -44,9 +45,12 @@
 #include <DirectXColors.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <cwchar>
 #include <exception>
 #include <iterator>
@@ -65,26 +69,26 @@
 #include <dxgidebug.h>
 #endif
 
-#include "Audio.h"
-#include "BufferHelpers.h"
-#include "CommonStates.h"
-#include "DDSTextureLoader.h"
-#include "DirectXHelpers.h"
-#include "Effects.h"
-#include "GamePad.h"
-#include "GeometricPrimitive.h"
-#include "GraphicsMemory.h"
-#include "Keyboard.h"
-#include "Model.h"
-#include "Mouse.h"
-#include "PostProcess.h"
-#include "PrimitiveBatch.h"
-#include "ScreenGrab.h"
-#include "SimpleMath.h"
-#include "SpriteBatch.h"
-#include "SpriteFont.h"
-#include "VertexTypes.h"
-#include "WICTextureLoader.h"
+#include "directxtk/Audio.h"
+#include "directxtk/BufferHelpers.h"
+#include "directxtk/CommonStates.h"
+#include "directxtk/DDSTextureLoader.h"
+#include "directxtk/DirectXHelpers.h"
+#include "directxtk/Effects.h"
+#include "directxtk/GamePad.h"
+#include "directxtk/GeometricPrimitive.h"
+#include "directxtk/GraphicsMemory.h"
+#include "directxtk/Keyboard.h"
+#include "directxtk/Model.h"
+#include "directxtk/Mouse.h"
+#include "directxtk/PostProcess.h"
+#include "directxtk/PrimitiveBatch.h"
+#include "directxtk/ScreenGrab.h"
+#include "directxtk/SimpleMath.h"
+#include "directxtk/SpriteBatch.h"
+#include "directxtk/SpriteFont.h"
+#include "directxtk/VertexTypes.h"
+#include "directxtk/WICTextureLoader.h"
 
 #include "config.h"
 
