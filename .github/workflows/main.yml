@@ -51,7 +51,7 @@ jobs:
         run: cmake --preset=${{ matrix.build_type }}
 
       - name: 'Build (DX11)'
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/DX11
         run: cmake --build out\build\${{ matrix.build_type }}
 
       - name: 'Configure CMake (DX12)'
@@ -59,7 +59,7 @@ jobs:
         run: cmake --preset=${{ matrix.build_type }}
 
       - name: 'Build (DX12)'
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/DX12
         run: cmake --build out\build\${{ matrix.build_type }}
 
   build2026:
