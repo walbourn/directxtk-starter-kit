@@ -1,0 +1,104 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+name: 'CMake (clang-cl)'
+
+on:
+  push:
+    branches: "main"
+    paths-ignore:
+      - '*.md'
+      - '.github/*.md'
+      - LICENSE
+  pull_request:
+    branches: "main"
+    paths-ignore:
+      - '*.md'
+      - '.github/*.md'
+      - LICENSE
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type: [x64-Debug-Clang, x64-Release-Clang]
+        arch: [amd64]
+        include:
+          - build_type: arm64-Debug-Clang
+            arch: amd64_arm64
+          - build_type: arm64-Release-Clang
+            arch: amd64_arm64
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 'Install Ninja'
+        run: choco install ninja
+
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: 'Configure CMake (DX11)'
+        working-directory: ${{ github.workspace }}/DX11
+        run: cmake --preset=${{ matrix.build_type }}
+
+      - name: 'Build (DX11)'
+        working-directory: ${{ github.workspace }}/DX11
+        run: cmake --build out\build\${{ matrix.build_type }}
+
+      - name: 'Configure CMake (DX12)'
+        working-directory: ${{ github.workspace }}/DX12
+        run: cmake --preset=${{ matrix.build_type }}
+
+      - name: 'Build (DX12)'
+        working-directory: ${{ github.workspace }}/DX12
+        run: cmake --build out\build\${{ matrix.build_type }}
+
+  build2026:
+    runs-on: windows-2025-vs2026
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type: [x64-Debug, x64-Release]
+        arch: [amd64]
+        include:
+          - build_type: arm64-Debug
+            arch: amd64_arm64
+          - build_type: arm64-Release
+            arch: amd64_arm64
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 'Install Ninja'
+        run: choco install ninja
+
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: 'Configure CMake (DX11)'
+        working-directory: ${{ github.workspace }}/DX11
+        run: cmake --preset=${{ matrix.build_type }}
+
+      - name: 'Build (DX11)'
+        working-directory: ${{ github.workspace }}/DX11
+        run: cmake --build out\build\${{ matrix.build_type }}
+
+      - name: 'Configure CMake (DX12)'
+        working-directory: ${{ github.workspace }}/DX12
+        run: cmake --preset=${{ matrix.build_type }}
+
+      - name: 'Build (DX12)'
+        working-directory: ${{ github.workspace }}/DX12
+        run: cmake --build out\build\${{ matrix.build_type }}
