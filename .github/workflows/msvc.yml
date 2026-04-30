@@ -39,13 +39,13 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ github.workspace }}/DX11
-        run: cmake -B out -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
         id: run-analysis
         with:
-          cmakeBuildDirectory: ./DX11/out
+          cmakeBuildDirectory: ./DX11/out/build/x64-Debug
           buildConfiguration: Debug
           ruleset: NativeRecommendedRules.ruleset
 
@@ -73,13 +73,13 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ github.workspace }}/DX12
-        run: cmake -B out -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
         id: run-analysis
         with:
-          cmakeBuildDirectory: ./DX12/out
+          cmakeBuildDirectory: ./DX12/out/build/x64-Debug
           buildConfiguration: Debug
           ruleset: NativeRecommendedRules.ruleset
 
