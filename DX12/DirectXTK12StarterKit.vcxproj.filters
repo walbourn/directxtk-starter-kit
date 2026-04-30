@@ -14,6 +14,9 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{e32848e1-7d7c-4917-9262-a82ebdd4de5d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Framework">
+      <UniqueIdentifier>{faf1e96f-f3da-4769-b23f-45781a8e3798}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -33,11 +36,11 @@
     <ClInclude Include="..\Utility\StepTimer.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\Utility\GameComponents.h">
-      <Filter>Utility</Filter>
+    <ClInclude Include="..\Framework\GameComponents.h">
+      <Filter>Framework</Filter>
     </ClInclude>
-    <ClInclude Include="..\Utility\GameServices.h">
-      <Filter>Utility</Filter>
+    <ClInclude Include="..\Framework\GameServices.h">
+      <Filter>Framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -54,11 +57,11 @@
     <ClCompile Include="..\Shared\Main.cpp">
       <Filter>MainLoop</Filter>
     </ClCompile>
-    <ClCompile Include="..\Utility\GameComponents.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\Framework\GameComponents.cpp">
+      <Filter>Framework</Filter>
     </ClCompile>
-    <ClCompile Include="..\Utility\GameServices.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\Framework\GameServices.cpp">
+      <Filter>Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

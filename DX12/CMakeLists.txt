@@ -30,11 +30,14 @@ set(SHARED_SOURCE
     ../Shared/Main.cpp
     )
 
+set(SHARED_FRAMEWORK
+    ../Framework/GameComponents.h
+    ../Framework/GameComponents.cpp
+    ../Framework/GameServices.h
+    ../Framework/GameServices.cpp
+    )
+
 set(SHARED_UTILITY
-    ../Utility/GameComponents.h
-    ../Utility/GameComponents.cpp
-    ../Utility/GameServices.h
-    ../Utility/GameServices.cpp
     ../Utility/StepTimer.h
     )
 
@@ -51,6 +54,7 @@ add_executable(${PROJECT_NAME} WIN32)
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${SHARED_SOURCE}
+        ${SHARED_FRAMEWORK}
         ${SHARED_UTILITY}
         ${DX12_UTILITY}
         pch.h
