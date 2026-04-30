@@ -23,8 +23,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 include(../build/CompilerAndLinker.cmake)
 
-set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
-
 set(SHARED_SOURCE
     ../Shared/config.h
     ../Shared/Game.cpp
