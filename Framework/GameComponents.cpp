@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <stdexcept>
 
+using namespace DX::Framework;
 
 void GameComponentCollection::Add(_In_ IGameComponent* item)
 {

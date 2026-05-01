@@ -8,49 +8,52 @@
 #include <typeindex>
 #include <unordered_map>
 
-
-// A class for handling the collection of game services
-//
-// Note: This class does *not* take ownership of the provider object
-class GameServiceContainer
+namespace DX::Framework
 {
-public:
-    GameServiceContainer() = default;
-
-    GameServiceContainer(GameServiceContainer&&) = default;
-    GameServiceContainer& operator=(GameServiceContainer&&) = default;
-
-    GameServiceContainer(const GameServiceContainer&) = delete;
-    GameServiceContainer& operator=(const GameServiceContainer&) = delete;
-
-    ~GameServiceContainer() { Clear(); }
-
-    void AddService(const std::type_info& type, _In_ void* provider);
-
-    template<class T>
-    void AddService(T* provider)
+    // A class for handling the collection of game services
+    //
+    // Note: This class does *not* take ownership of the provider object
+    class GameServiceContainer
     {
-        AddService(typeid(T), provider);
-    }
+    public:
+        GameServiceContainer() = default;
 
-    void RemoveService(const std::type_info& type);
+        GameServiceContainer(GameServiceContainer&&) = default;
+        GameServiceContainer& operator=(GameServiceContainer&&) = default;
 
-    template<class T>
-    void RemoveService(T*)
-    {
-        RemoteService(typeid(T));
-    }
+        GameServiceContainer(const GameServiceContainer&) = delete;
+        GameServiceContainer& operator=(const GameServiceContainer&) = delete;
 
-    void Clear();
+        ~GameServiceContainer() { Clear(); }
 
-    void* GetService(const std::type_info& type) const;
+        void AddService(const std::type_info& type, _In_ void* provider);
 
-    template<class T>
-    T* GetService()
-    {
-        return static_cast<T*>(GetService(typeid(T)));
-    }
+        template<class T>
+        void AddService(T* provider)
+        {
+            AddService(typeid(T), provider);
+        }
 
-private:
-    std::unordered_map<std::type_index, void*> mServices;
-};
+        void RemoveService(const std::type_info& type);
+
+        template<class T>
+        void RemoveService(T*)
+        {
+            RemoteService(typeid(T));
+        }
+
+        void Clear();
+
+        void* GetService(const std::type_info& type) const;
+
+        template<class T>
+        T* GetService()
+        {
+            return static_cast<T*>(GetService(typeid(T)));
+        }
+
+    private:
+        std::unordered_map<std::type_index, void*> mServices;
+    };
+
+}

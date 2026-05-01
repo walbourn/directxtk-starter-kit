@@ -1,5 +1,5 @@
 //
-// Main.cpp
+// Window.cpp
 //
 
 #include "pch.h"
@@ -10,50 +10,12 @@
 
 using namespace DirectX;
 
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wcovered-switch-default"
-#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
-#pragma clang diagnostic ignored "-Wswitch-enum"
-#endif
-
-#pragma warning(disable : 4061)
-
-namespace
-{
-    std::unique_ptr<Game> g_game;
-}
-
-#ifdef BUILD_DX12
-LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX12)";
-#else
-LPCWSTR g_szAppName = L"DirectXTKStarter Kit (DX11)";
-#endif
-
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void ExitGame() noexcept;
 
-#if defined(BUILD_DX12) && defined(USING_D3D12_AGILITY_SDK)
-extern "C"
+// Entry point for framework
+_Use_decl_annotations_
+int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow, LPCWSTR szAppName)
 {
-    // Used to enable the "Agility SDK" components
-    __declspec(dllexport) extern const UINT D3D12SDKVersion = D3D12_SDK_VERSION;
-    __declspec(dllexport) extern const char* D3D12SDKPath = u8".\\D3D12\\";
-}
-#endif
-
-#ifdef BUILD_DX11
-// Indicates to hybrid graphics systems to prefer the discrete part by default
-extern "C"
-{
-    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
-#endif
-
-// Entry point
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     if (!XMVerifyCPUSupport())
@@ -68,8 +30,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (FAILED(hr))
 #endif
         return 1;
-
-    g_game = std::make_unique<Game>();
 
     // Register class and create window
     HDEVNOTIFY hNewAudio = nullptr;
@@ -90,20 +50,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
         // Create window
         int w, h;
-        g_game->GetDefaultSize(w, h);
+        this->GetDefaultSize(w, h);
 
         RECT rc = { 0, 0, static_cast<LONG>(w), static_cast<LONG>(h) };
 
         AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 #ifdef DEFAULT_FULLSCREEN
-        HWND hwnd = CreateWindowExW(WS_EX_TOPMOST, L"StarterKitWindowClass", g_szAppName, WS_POPUP,
+        HWND hwnd = CreateWindowExW(WS_EX_TOPMOST, L"StarterKitWindowClass", szAppName, WS_POPUP,
             CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-            g_game.get());
+            this);
 #else
-        HWND hwnd = CreateWindowExW(0, L"StarterKitWindowClass", g_szAppName, WS_OVERLAPPEDWINDOW,
+        HWND hwnd = CreateWindowExW(0, L"StarterKitWindowClass", szAppName, WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-            g_game.get());
+            this);
 #endif
         if (!hwnd)
             return 1;
@@ -115,7 +75,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
         GetClientRect(hwnd, &rc);
 
-        g_game->Initialize(hwnd, rc.right - rc.left, rc.bottom - rc.top);
+        this->Initialize(hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
         // Listen for new audio devices
         DEV_BROADCAST_DEVICEINTERFACE filter = {};
@@ -137,13 +97,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
         else
         {
-            g_game->Tick();
+            this->Tick();
         }
     }
 
-    g_game->OnExiting();
-
-    g_game.reset();
+    this->OnExiting();
 
     if (hNewAudio)
     {
@@ -170,7 +128,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static bool s_fullscreen = false;
 #endif
 
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+    auto game = reinterpret_cast<DX::Framework::Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
     switch (message)
     {
@@ -385,7 +343,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 // Exit helper
-void ExitGame() noexcept
+void DX::Framework::Game::Quit() noexcept
 {
     PostQuitMessage(0);
 }

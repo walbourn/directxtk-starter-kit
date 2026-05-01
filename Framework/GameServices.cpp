@@ -12,6 +12,7 @@
 #include <cassert>
 #include <stdexcept>
 
+using namespace DX::Framework;
 
 void GameServiceContainer::AddService(const std::type_info& type, _In_ void* provider)
 {

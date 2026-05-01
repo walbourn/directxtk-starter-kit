@@ -5,10 +5,9 @@
 #include "pch.h"
 #include "Game.h"
 
-extern void ExitGame() noexcept;
-
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
+using namespace DX::Framework;
 
 using Microsoft::WRL::ComPtr;
 

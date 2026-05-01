@@ -20,13 +20,17 @@ The **CMakeSettings.json** file uses the environment variable ``VCPKG_ROOT`` for
 
 * ``Shared\``: Contains the shared demonstration code including the 'main loop'.
 
-* ``Utility\``: Contains the shared utility code like GameComponents and StepTimer.
+* ``Framework\``: Contains the shared framework code like GameComponents, GameServices, and the base Game class.
+
+* ``Utility\``: Contains the shared utility code like StepTimer.
 
 ## Notices
 
 All source code for this package are subject to the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
 The content files used in this starter kit are from XNA Game Studio samples and starter kits published under the [Microsoft Public License (MS-PL)](https://opensource.org/licenses/MS-PL).
+
+## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 

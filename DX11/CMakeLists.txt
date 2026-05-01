@@ -1,6 +1,3 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
-
 cmake_minimum_required (VERSION 3.21)
 
 if(POLICY CMP0162)
@@ -23,23 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 include(../build/CompilerAndLinker.cmake)
 
-set(SHARED_SOURCE
-    ../Shared/config.h
-    ../Shared/Game.cpp
-    ../Shared/Game.h
-    ../Shared/Main.cpp
-    )
-
-set(SHARED_FRAMEWORK
-    ../Framework/GameComponents.h
-    ../Framework/GameComponents.cpp
-    ../Framework/GameServices.h
-    ../Framework/GameServices.cpp
-    )
-
-set(SHARED_UTILITY
-    ../Utility/StepTimer.h
-    )
+include (../build/Shared.cmake)
 
 set(DX11_UTILITY
     DeviceResources.cpp
@@ -56,10 +37,12 @@ target_sources(${PROJECT_NAME}
         ${SHARED_FRAMEWORK}
         ${SHARED_UTILITY}
         ${DX11_UTILITY}
+        DirectX11Game.cpp
+        DirectX11Game.h
         pch.h
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Shared/ ../Utility/)
+target_include_directories(${PROJECT_NAME} PRIVATE ./ ../Framework ../Shared/ ../Utility/)
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h)
 

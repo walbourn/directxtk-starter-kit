@@ -102,6 +102,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,6 +124,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -146,6 +148,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,6 +174,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -184,21 +188,23 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Framework\Game.h" />
     <ClInclude Include="..\Framework\GameComponents.h" />
     <ClInclude Include="..\Framework\GameServices.h" />
     <ClInclude Include="..\Shared\config.h" />
-    <ClInclude Include="..\Shared\Game.h" />
     <ClInclude Include="..\Utility\StepTimer.h" />
     <ClInclude Include="DeviceResources.h" />
+    <ClInclude Include="DirectX11Game.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RenderTexture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Framework\Game.cpp" />
     <ClCompile Include="..\Framework\GameComponents.cpp" />
     <ClCompile Include="..\Framework\GameServices.cpp" />
-    <ClCompile Include="..\Shared\Game.cpp" />
-    <ClCompile Include="..\Shared\Main.cpp" />
+    <ClCompile Include="..\Framework\Window.cpp" />
     <ClCompile Include="DeviceResources.cpp" />
+    <ClCompile Include="DirectX11Game.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>

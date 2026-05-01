@@ -23,9 +23,6 @@
     <ClInclude Include="DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\Shared\Game.h">
-      <Filter>MainLoop</Filter>
-    </ClInclude>
     <ClInclude Include="..\Shared\config.h" />
     <ClInclude Include="RenderTexture.h">
       <Filter>Common</Filter>
@@ -39,25 +36,34 @@
     <ClInclude Include="..\Framework\GameServices.h">
       <Filter>Framework</Filter>
     </ClInclude>
+    <ClInclude Include="DirectX11Game.h">
+      <Filter>MainLoop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Framework\Game.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="DeviceResources.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\Shared\Game.cpp">
-      <Filter>MainLoop</Filter>
-    </ClCompile>
     <ClCompile Include="RenderTexture.cpp">
       <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Shared\Main.cpp">
-      <Filter>MainLoop</Filter>
     </ClCompile>
     <ClCompile Include="..\Framework\GameComponents.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\Framework\GameServices.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11Game.cpp">
+      <Filter>MainLoop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Framework\Game.cpp">
+      <Filter>Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Framework\Window.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
   </ItemGroup>
