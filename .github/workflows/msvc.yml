@@ -41,6 +41,10 @@ jobs:
         working-directory: ${{ github.workspace }}/DX11
         run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
+      - name: Build CMake
+        working-directory: ${{ github.workspace }}/DX11
+        run: cmake --build out/build/x64-Debug --config Debug
+
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
         id: run-analysis
@@ -48,6 +52,7 @@ jobs:
           cmakeBuildDirectory: ${{ github.workspace }}/DX11/out/build/x64-Debug
           buildConfiguration: Debug
           ruleset: NativeRecommendedRules.ruleset
+          ignoredPaths: '**/vcpkg_installed/**'
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
@@ -75,6 +80,10 @@ jobs:
         working-directory: ${{ github.workspace }}/DX12
         run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
+      - name: Build CMake
+        working-directory: ${{ github.workspace }}/DX12
+        run: cmake --build out/build/x64-Debug --config Debug
+
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
         id: run-analysis
@@ -82,6 +91,7 @@ jobs:
           cmakeBuildDirectory: ${{ github.workspace }}/DX12/out/build/x64-Debug
           buildConfiguration: Debug
           ruleset: NativeRecommendedRules.ruleset
+          ignoredPaths: '**/vcpkg_installed/**'
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
