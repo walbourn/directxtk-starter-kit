@@ -83,7 +83,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
          "/wd4061" "/wd4365" "/wd4514" "/wd4571" "/wd4668" "/wd4710" "/wd4820" "/wd5039" "/wd5045")
 
     if(ENABLE_CODE_ANALYSIS)
-        target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
+        target_compile_options(${PROJECT_NAME} PRIVATE /analyze /WX)
     endif()
 endif()
 

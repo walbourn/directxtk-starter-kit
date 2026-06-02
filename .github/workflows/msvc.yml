@@ -20,6 +20,8 @@ on:
 permissions:
   contents: read
 
+# Can't use microsoft/msvc-code-analysis-action as it fails on the ../Framework/Source.cpp files
+
 jobs:
   analyze_dx11:
     permissions:
@@ -39,26 +41,11 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ github.workspace }}/DX11
-        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DENABLE_CODE_ANALYSIS=ON
 
       - name: Build CMake
         working-directory: ${{ github.workspace }}/DX11
         run: cmake --build out/build/x64-Debug --config Debug
-
-      - name: Initialize MSVC Code Analysis
-        uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
-        id: run-analysis
-        with:
-          cmakeBuildDirectory: ${{ github.workspace }}/DX11/out/build/x64-Debug
-          buildConfiguration: Debug
-          ruleset: NativeRecommendedRules.ruleset
-          ignoredPaths: '**/vcpkg_installed/**'
-
-      # Upload SARIF file to GitHub Code Scanning Alerts
-      - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v3.29.5
-        with:
-          sarif_file: ${{ steps.run-analysis.outputs.sarif }}
 
   analyze_dx12:
     permissions:
@@ -78,23 +65,8 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ github.workspace }}/DX12
-        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+        run: cmake --preset=x64-Debug -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DENABLE_CODE_ANALYSIS=ON
 
       - name: Build CMake
         working-directory: ${{ github.workspace }}/DX12
         run: cmake --build out/build/x64-Debug --config Debug
-
-      - name: Initialize MSVC Code Analysis
-        uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
-        id: run-analysis
-        with:
-          cmakeBuildDirectory: ${{ github.workspace }}/DX12/out/build/x64-Debug
-          buildConfiguration: Debug
-          ruleset: NativeRecommendedRules.ruleset
-          ignoredPaths: '**/vcpkg_installed/**'
-
-      # Upload SARIF file to GitHub Code Scanning Alerts
-      - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v3.29.5
-        with:
-          sarif_file: ${{ steps.run-analysis.outputs.sarif }}
