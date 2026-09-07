@@ -104,7 +104,9 @@ namespace DX
     class com_exception : public std::exception
     {
     public:
-        com_exception(HRESULT hr) noexcept : result(hr) {}
+        com_exception(HRESULT hr) noexcept
+            : result(hr)
+        {}
 
         const char* what() const noexcept override
         {
@@ -125,4 +127,4 @@ namespace DX
             throw com_exception(hr);
         }
     }
-}
+} // namespace DX

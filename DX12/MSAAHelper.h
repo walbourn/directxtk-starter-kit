@@ -15,21 +15,20 @@
 
 #include <tuple>
 
-
 namespace DX
 {
     class MSAAHelper
     {
     public:
-        explicit MSAAHelper(DXGI_FORMAT backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM,
-            DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT,
-            unsigned int sampleCount = 4) noexcept(false);
+        explicit MSAAHelper(DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_B8G8R8A8_UNORM,
+            DXGI_FORMAT                 depthBufferFormat = DXGI_FORMAT_D32_FLOAT,
+            unsigned int                sampleCount       = 4) noexcept(false);
 
-        MSAAHelper(MSAAHelper&&) = default;
-        MSAAHelper& operator= (MSAAHelper&&) = default;
+        MSAAHelper(MSAAHelper&&)            = default;
+        MSAAHelper& operator=(MSAAHelper&&) = default;
 
-        MSAAHelper(MSAAHelper const&) = delete;
-        MSAAHelper& operator= (MSAAHelper const&) = delete;
+        MSAAHelper(MSAAHelper const&)            = delete;
+        MSAAHelper& operator=(MSAAHelper const&) = delete;
 
         void SetDevice(_In_ ID3D12Device* device);
 
@@ -37,12 +36,12 @@ namespace DX
 
         void ReleaseDevice();
 
-        void Prepare(_In_ ID3D12GraphicsCommandList* commandList,
-            D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+        void Prepare(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
 
-        void Resolve(_In_ ID3D12GraphicsCommandList* commandList, _In_ ID3D12Resource* backBuffer,
-            D3D12_RESOURCE_STATES beforeState = D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATES afterState = D3D12_RESOURCE_STATE_PRESENT);
+        void Resolve(_In_ ID3D12GraphicsCommandList* commandList,
+            _In_ ID3D12Resource*                     backBuffer,
+            D3D12_RESOURCE_STATES                    beforeState = D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATES                    afterState  = D3D12_RESOURCE_STATE_PRESENT);
 
         void Transition(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
@@ -72,30 +71,27 @@ namespace DX
 #endif
         }
 
-        void SetClearColor(DirectX::FXMVECTOR color)
-        {
-            DirectX::XMStoreFloat4(reinterpret_cast<DirectX::XMFLOAT4*>(m_clearColor), color);
-        }
+        void SetClearColor(DirectX::FXMVECTOR color) { DirectX::XMStoreFloat4(reinterpret_cast<DirectX::XMFLOAT4*>(m_clearColor), color); }
 
-        DXGI_FORMAT GetBackBufferFormat() const noexcept { return m_backBufferFormat; }
-        DXGI_FORMAT GetDepthBufferFormat() const noexcept { return m_depthBufferFormat; }
+        DXGI_FORMAT  GetBackBufferFormat() const noexcept { return m_backBufferFormat; }
+        DXGI_FORMAT  GetDepthBufferFormat() const noexcept { return m_depthBufferFormat; }
         unsigned int GetSampleCount() const noexcept { return m_sampleCount; }
 
     private:
-        Microsoft::WRL::ComPtr<ID3D12Device>                m_device;
-        Microsoft::WRL::ComPtr<ID3D12Resource>              m_msaaRenderTarget;
-        Microsoft::WRL::ComPtr<ID3D12Resource>              m_msaaDepthStencil;
-        float                                               m_clearColor[4];
+        Microsoft::WRL::ComPtr<ID3D12Device>   m_device;
+        Microsoft::WRL::ComPtr<ID3D12Resource> m_msaaRenderTarget;
+        Microsoft::WRL::ComPtr<ID3D12Resource> m_msaaDepthStencil;
+        float                                  m_clearColor[4];
 
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>        m_rtvDescriptorHeap;
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>        m_dsvDescriptorHeap;
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap;
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvDescriptorHeap;
 
-        DXGI_FORMAT                                         m_backBufferFormat;
-        DXGI_FORMAT                                         m_depthBufferFormat;
-        unsigned int                                        m_sampleCount;
-        unsigned int                                        m_targetSampleCount;
+        DXGI_FORMAT  m_backBufferFormat;
+        DXGI_FORMAT  m_depthBufferFormat;
+        unsigned int m_sampleCount;
+        unsigned int m_targetSampleCount;
 
-        size_t                                              m_width;
-        size_t                                              m_height;
+        size_t m_width;
+        size_t m_height;
     };
-}
+} // namespace DX

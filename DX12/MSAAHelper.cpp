@@ -30,25 +30,22 @@ using Microsoft::WRL::ComPtr;
 #define DX_CONSTEXPR constexpr
 #endif
 
-MSAAHelper::MSAAHelper(DXGI_FORMAT backBufferFormat,
-    DXGI_FORMAT depthBufferFormat,
-    unsigned int sampleCount) noexcept(false) :
-        m_clearColor{},
-        m_rtvDescriptorHeap{},
-        m_dsvDescriptorHeap{},
-        m_backBufferFormat(backBufferFormat),
-        m_depthBufferFormat(depthBufferFormat),
-        m_sampleCount(0),
-        m_targetSampleCount(sampleCount),
-        m_width(0),
-        m_height(0)
+MSAAHelper::MSAAHelper(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthBufferFormat, unsigned int sampleCount) noexcept(false)
+    : m_clearColor{},
+      m_rtvDescriptorHeap{},
+      m_dsvDescriptorHeap{},
+      m_backBufferFormat(backBufferFormat),
+      m_depthBufferFormat(depthBufferFormat),
+      m_sampleCount(0),
+      m_targetSampleCount(sampleCount),
+      m_width(0),
+      m_height(0)
 {
     if (sampleCount < 2 || sampleCount > D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT)
     {
         throw std::out_of_range("MSAA sample count invalid.");
     }
 }
-
 
 void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
 {
@@ -67,9 +64,8 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
             throw std::exception();
         }
 
-        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_RENDER_TARGET
-            | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RESOLVE
-            | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
+        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_RENDER_TARGET | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RESOLVE
+                                     | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport.Support1 & required) != required)
         {
 #ifdef _DEBUG
@@ -89,8 +85,7 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
             throw std::exception();
         }
 
-        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL
-            | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
+        DX_CONSTEXPR UINT required = D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL | D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport.Support1 & required) != required)
         {
 #ifdef _DEBUG
@@ -104,7 +99,8 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
 
     for (m_sampleCount = m_targetSampleCount; m_sampleCount > 1; m_sampleCount--)
     {
-        D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS levels = { m_backBufferFormat, m_sampleCount, D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE, 0u };
+        D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS levels
+            = { m_backBufferFormat, m_sampleCount, D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE, 0u };
         if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &levels, sizeof(levels))))
             continue;
 
@@ -122,29 +118,28 @@ void MSAAHelper::SetDevice(_In_ ID3D12Device* device)
 
     // Create descriptor heaps for render target views and depth stencil views.
     D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
-    rtvDescriptorHeapDesc.NumDescriptors = 1;
-    rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvDescriptorHeapDesc.NumDescriptors             = 1;
+    rtvDescriptorHeapDesc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-    ThrowIfFailed(device->CreateDescriptorHeap(&rtvDescriptorHeapDesc,
-        IID_GRAPHICS_PPV_ARGS(m_rtvDescriptorHeap.ReleaseAndGetAddressOf())));
+    ThrowIfFailed(
+        device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_GRAPHICS_PPV_ARGS(m_rtvDescriptorHeap.ReleaseAndGetAddressOf())));
 
     m_rtvDescriptorHeap->SetName(L"MSAAHelper");
 
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
         D3D12_DESCRIPTOR_HEAP_DESC dsvDescriptorHeapDesc = {};
-        dsvDescriptorHeapDesc.NumDescriptors = 1;
-        dsvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dsvDescriptorHeapDesc.NumDescriptors             = 1;
+        dsvDescriptorHeapDesc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
-        ThrowIfFailed(device->CreateDescriptorHeap(&dsvDescriptorHeapDesc,
-            IID_GRAPHICS_PPV_ARGS(m_dsvDescriptorHeap.ReleaseAndGetAddressOf())));
+        ThrowIfFailed(
+            device->CreateDescriptorHeap(&dsvDescriptorHeapDesc, IID_GRAPHICS_PPV_ARGS(m_dsvDescriptorHeap.ReleaseAndGetAddressOf())));
 
         m_dsvDescriptorHeap->SetName(L"MSAAHelper");
     }
 
     m_device = device;
 }
-
 
 void MSAAHelper::SizeResources(size_t width, size_t height)
 {
@@ -164,34 +159,30 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
     const CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_DEFAULT);
 
     // Create an MSAA render target
-    D3D12_RESOURCE_DESC msaaRTDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        m_backBufferFormat,
+    D3D12_RESOURCE_DESC msaaRTDesc = CD3DX12_RESOURCE_DESC::Tex2D(m_backBufferFormat,
         static_cast<UINT64>(width),
         static_cast<UINT>(height),
         1, // This render target view has only one texture.
         1, // Use a single mipmap level
-        m_sampleCount
-    );
+        m_sampleCount);
     msaaRTDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
     D3D12_CLEAR_VALUE msaaOptimizedClearValue = {};
-    msaaOptimizedClearValue.Format = m_backBufferFormat;
+    msaaOptimizedClearValue.Format            = m_backBufferFormat;
     memcpy(msaaOptimizedClearValue.Color, m_clearColor, sizeof(float) * 4);
 
-    ThrowIfFailed(m_device->CreateCommittedResource(
-        &heapProperties,
+    ThrowIfFailed(m_device->CreateCommittedResource(&heapProperties,
         D3D12_HEAP_FLAG_NONE,
         &msaaRTDesc,
         D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
         &msaaOptimizedClearValue,
-        IID_GRAPHICS_PPV_ARGS(m_msaaRenderTarget.ReleaseAndGetAddressOf())
-    ));
+        IID_GRAPHICS_PPV_ARGS(m_msaaRenderTarget.ReleaseAndGetAddressOf())));
 
-    m_msaaRenderTarget->SetName( L"MSAA Render Target" );
+    m_msaaRenderTarget->SetName(L"MSAA Render Target");
 
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-    rtvDesc.Format = m_backBufferFormat;
-    rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
+    rtvDesc.Format                        = m_backBufferFormat;
+    rtvDesc.ViewDimension                 = D3D12_RTV_DIMENSION_TEXTURE2DMS;
 
 #if defined(_MSC_VER) || !defined(_WIN32)
     auto hCPU = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -200,40 +191,34 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
     std::ignore = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
 #endif
 
-    m_device->CreateRenderTargetView(
-        m_msaaRenderTarget.Get(), &rtvDesc,
-        hCPU);
+    m_device->CreateRenderTargetView(m_msaaRenderTarget.Get(), &rtvDesc, hCPU);
 
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
         // Create an MSAA depth stencil view
-        D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-            m_depthBufferFormat,
+        D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(m_depthBufferFormat,
             static_cast<UINT64>(width),
             static_cast<UINT>(height),
             1, // This depth stencil view has only one texture.
             1, // Use a single mipmap level.
-            m_sampleCount
-        );
+            m_sampleCount);
         depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-        D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-        depthOptimizedClearValue.Format = m_depthBufferFormat;
-        depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+        D3D12_CLEAR_VALUE depthOptimizedClearValue    = {};
+        depthOptimizedClearValue.Format               = m_depthBufferFormat;
+        depthOptimizedClearValue.DepthStencil.Depth   = 1.0f;
         depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-        ThrowIfFailed(m_device->CreateCommittedResource(
-            &heapProperties,
+        ThrowIfFailed(m_device->CreateCommittedResource(&heapProperties,
             D3D12_HEAP_FLAG_NONE,
             &depthStencilDesc,
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             &depthOptimizedClearValue,
-            IID_GRAPHICS_PPV_ARGS(m_msaaDepthStencil.ReleaseAndGetAddressOf())
-        ));
+            IID_GRAPHICS_PPV_ARGS(m_msaaDepthStencil.ReleaseAndGetAddressOf())));
 
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = m_depthBufferFormat;
-        dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
+        dsvDesc.Format                        = m_depthBufferFormat;
+        dsvDesc.ViewDimension                 = D3D12_DSV_DIMENSION_TEXTURE2DMS;
 
 #if defined(_MSC_VER) || !defined(_WIN32)
         hCPU = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -241,15 +226,12 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
         std::ignore = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(&hCPU);
 #endif
 
-        m_device->CreateDepthStencilView(
-            m_msaaDepthStencil.Get(), &dsvDesc,
-            hCPU);
+        m_device->CreateDepthStencilView(m_msaaDepthStencil.Get(), &dsvDesc, hCPU);
     }
 
-    m_width = width;
+    m_width  = width;
     m_height = height;
 }
-
 
 void MSAAHelper::ReleaseDevice()
 {
@@ -264,32 +246,22 @@ void MSAAHelper::ReleaseDevice()
     m_width = m_height = 0;
 }
 
-
-void MSAAHelper::Prepare(_In_ ID3D12GraphicsCommandList* commandList,
-    D3D12_RESOURCE_STATES beforeState)
+void MSAAHelper::Prepare(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState)
 {
-    const D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        m_msaaRenderTarget.Get(),
-        beforeState,
-        D3D12_RESOURCE_STATE_RENDER_TARGET);
+    const D3D12_RESOURCE_BARRIER barrier
+        = CD3DX12_RESOURCE_BARRIER::Transition(m_msaaRenderTarget.Get(), beforeState, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->ResourceBarrier(1, &barrier);
 }
 
-
 void MSAAHelper::Resolve(_In_ ID3D12GraphicsCommandList* commandList,
-    _In_ ID3D12Resource* backBuffer,
-    D3D12_RESOURCE_STATES beforeState,
-    D3D12_RESOURCE_STATES afterState)
+    _In_ ID3D12Resource*                                 backBuffer,
+    D3D12_RESOURCE_STATES                                beforeState,
+    D3D12_RESOURCE_STATES                                afterState)
 {
-    const D3D12_RESOURCE_BARRIER barriers[2] =
-    {
-        CD3DX12_RESOURCE_BARRIER::Transition(m_msaaRenderTarget.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
-        CD3DX12_RESOURCE_BARRIER::Transition(backBuffer,
-            beforeState,
-            D3D12_RESOURCE_STATE_RESOLVE_DEST)
-    };
+    const D3D12_RESOURCE_BARRIER barriers[2] = { CD3DX12_RESOURCE_BARRIER::Transition(m_msaaRenderTarget.Get(),
+                                                     D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                     D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
+        CD3DX12_RESOURCE_BARRIER::Transition(backBuffer, beforeState, D3D12_RESOURCE_STATE_RESOLVE_DEST) };
 
     commandList->ResourceBarrier((beforeState != D3D12_RESOURCE_STATE_RESOLVE_DEST) ? 2u : 1u, barriers);
 
@@ -297,32 +269,27 @@ void MSAAHelper::Resolve(_In_ ID3D12GraphicsCommandList* commandList,
 
     if (afterState != D3D12_RESOURCE_STATE_RESOLVE_DEST)
     {
-        const D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            backBuffer,
-            D3D12_RESOURCE_STATE_RESOLVE_DEST,
-            afterState);
+        const D3D12_RESOURCE_BARRIER barrier
+            = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, afterState);
         commandList->ResourceBarrier(1, &barrier);
     }
 }
 
-
-void MSAAHelper::Transition(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+void MSAAHelper::Transition(_In_ ID3D12GraphicsCommandList* commandList,
+    D3D12_RESOURCE_STATES                                   beforeState,
+    D3D12_RESOURCE_STATES                                   afterState)
 {
     if (beforeState != afterState)
     {
-        const D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            m_msaaRenderTarget.Get(),
-            beforeState,
-            afterState);
+        const D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_msaaRenderTarget.Get(), beforeState, afterState);
         commandList->ResourceBarrier(1, &barrier);
     }
 }
-
 
 void MSAAHelper::SetWindow(const RECT& output)
 {
     // Determine the render target size in pixels.
-    const auto width = size_t(std::max<LONG>(output.right - output.left, 1));
+    const auto width  = size_t(std::max<LONG>(output.right - output.left, 1));
     const auto height = size_t(std::max<LONG>(output.bottom - output.top, 1));
 
     SizeResources(width, height);

@@ -8,23 +8,22 @@
 #include <cstdint>
 #include <exception>
 
-
 namespace DX
 {
     // Helper class for animation and simulation timing.
     class StepTimer
     {
     public:
-        StepTimer() noexcept(false) :
-            m_elapsedTicks(0),
-            m_totalTicks(0),
-            m_leftOverTicks(0),
-            m_frameCount(0),
-            m_framesPerSecond(0),
-            m_framesThisSecond(0),
-            m_qpcSecondCounter(0),
-            m_isFixedTimeStep(false),
-            m_targetElapsedTicks(TicksPerSecond / 60)
+        StepTimer() noexcept(false)
+            : m_elapsedTicks(0),
+              m_totalTicks(0),
+              m_leftOverTicks(0),
+              m_frameCount(0),
+              m_framesPerSecond(0),
+              m_framesThisSecond(0),
+              m_qpcSecondCounter(0),
+              m_isFixedTimeStep(false),
+              m_targetElapsedTicks(TicksPerSecond / 60)
         {
             if (!QueryPerformanceFrequency(&m_qpcFrequency))
             {
@@ -42,11 +41,11 @@ namespace DX
 
         // Get elapsed time since the previous Update call.
         uint64_t GetElapsedTicks() const noexcept { return m_elapsedTicks; }
-        double GetElapsedSeconds() const noexcept { return TicksToSeconds(m_elapsedTicks); }
+        double   GetElapsedSeconds() const noexcept { return TicksToSeconds(m_elapsedTicks); }
 
         // Get total time since the start of the program.
         uint64_t GetTotalTicks() const noexcept { return m_totalTicks; }
-        double GetTotalSeconds() const noexcept { return TicksToSeconds(m_totalTicks); }
+        double   GetTotalSeconds() const noexcept { return TicksToSeconds(m_totalTicks); }
 
         // Get total number of updates since start of the program.
         uint32_t GetFrameCount() const noexcept { return m_frameCount; }
@@ -64,7 +63,7 @@ namespace DX
         // Integer format represents time using 10,000,000 ticks per second.
         static constexpr uint64_t TicksPerSecond = 10000000;
 
-        static constexpr double TicksToSeconds(uint64_t ticks) noexcept { return static_cast<double>(ticks) / TicksPerSecond; }
+        static constexpr double   TicksToSeconds(uint64_t ticks) noexcept { return static_cast<double>(ticks) / TicksPerSecond; }
         static constexpr uint64_t SecondsToTicks(double seconds) noexcept { return static_cast<uint64_t>(seconds * TicksPerSecond); }
 
         // After an intentional timing discontinuity (for instance a blocking IO operation)
@@ -78,8 +77,8 @@ namespace DX
                 throw std::exception();
             }
 
-            m_leftOverTicks = 0;
-            m_framesPerSecond = 0;
+            m_leftOverTicks    = 0;
+            m_framesPerSecond  = 0;
             m_framesThisSecond = 0;
             m_qpcSecondCounter = 0;
         }
@@ -160,7 +159,7 @@ namespace DX
 
             if (m_qpcSecondCounter >= static_cast<uint64_t>(m_qpcFrequency.QuadPart))
             {
-                m_framesPerSecond = m_framesThisSecond;
+                m_framesPerSecond  = m_framesThisSecond;
                 m_framesThisSecond = 0;
                 m_qpcSecondCounter %= static_cast<uint64_t>(m_qpcFrequency.QuadPart);
             }
@@ -170,7 +169,7 @@ namespace DX
         // Source timing data uses QPC units.
         LARGE_INTEGER m_qpcFrequency;
         LARGE_INTEGER m_qpcLastTime;
-        uint64_t m_qpcMaxDelta;
+        uint64_t      m_qpcMaxDelta;
 
         // Derived timing data uses a canonical tick format.
         uint64_t m_elapsedTicks;
@@ -184,7 +183,7 @@ namespace DX
         uint64_t m_qpcSecondCounter;
 
         // Members for configuring fixed timestep mode.
-        bool m_isFixedTimeStep;
+        bool     m_isFixedTimeStep;
         uint64_t m_targetElapsedTicks;
     };
-}
+} // namespace DX

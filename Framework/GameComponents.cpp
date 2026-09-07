@@ -120,7 +120,8 @@ void GameComponentCollection::Update(DX::StepTimer const& timer)
     {
         mDirtyOrder = false;
 
-        std::stable_sort(mGameComponents.begin(), mGameComponents.end(),
+        std::stable_sort(mGameComponents.begin(),
+            mGameComponents.end(),
             [](const IGameComponent* item1, const IGameComponent* item2) -> bool
             {
                 return item1->m_order < item2->m_order;

@@ -31,22 +31,19 @@ using namespace DX;
 
 using Microsoft::WRL::ComPtr;
 
-MSAAHelper::MSAAHelper(DXGI_FORMAT backBufferFormat,
-    DXGI_FORMAT depthBufferFormat,
-    unsigned int sampleCount) noexcept(false) :
-        m_backBufferFormat(backBufferFormat),
-        m_depthBufferFormat(depthBufferFormat),
-        m_sampleCount(0),
-        m_targetSampleCount(sampleCount),
-        m_width(0),
-        m_height(0)
+MSAAHelper::MSAAHelper(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthBufferFormat, unsigned int sampleCount) noexcept(false)
+    : m_backBufferFormat(backBufferFormat),
+      m_depthBufferFormat(depthBufferFormat),
+      m_sampleCount(0),
+      m_targetSampleCount(sampleCount),
+      m_width(0),
+      m_height(0)
 {
     if (sampleCount < 2 || sampleCount > D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT)
     {
         throw std::out_of_range("MSAA sample count invalid.");
     }
 }
-
 
 void MSAAHelper::SetDevice(_In_ ID3D11Device* device)
 {
@@ -65,9 +62,8 @@ void MSAAHelper::SetDevice(_In_ ID3D11Device* device)
             throw std::exception();
         }
 
-        constexpr UINT32 required = D3D11_FORMAT_SUPPORT_RENDER_TARGET
-            | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RESOLVE
-            | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET;
+        constexpr UINT32 required
+            = D3D11_FORMAT_SUPPORT_RENDER_TARGET | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RESOLVE | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport & required) != required)
         {
 #ifdef _DEBUG
@@ -86,8 +82,7 @@ void MSAAHelper::SetDevice(_In_ ID3D11Device* device)
             throw std::exception();
         }
 
-        constexpr UINT32 required = D3D11_FORMAT_SUPPORT_DEPTH_STENCIL
-            | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET;
+        constexpr UINT32 required = D3D11_FORMAT_SUPPORT_DEPTH_STENCIL | D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET;
         if ((formatSupport & required) != required)
         {
 #ifdef _DEBUG
@@ -105,7 +100,7 @@ void MSAAHelper::SetDevice(_In_ ID3D11Device* device)
         if (FAILED(device->CheckMultisampleQualityLevels(m_backBufferFormat, m_sampleCount, &levels)))
             continue;
 
-        if ( levels > 0)
+        if (levels > 0)
             break;
     }
 
@@ -119,7 +114,6 @@ void MSAAHelper::SetDevice(_In_ ID3D11Device* device)
 
     m_device = device;
 }
-
 
 void MSAAHelper::SizeResources(size_t width, size_t height)
 {
@@ -137,8 +131,7 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
     m_width = m_height = 0;
 
     // Create an MSAA render target
-    const CD3D11_TEXTURE2D_DESC renderTargetDesc(
-        m_backBufferFormat,
+    const CD3D11_TEXTURE2D_DESC renderTargetDesc(m_backBufferFormat,
         static_cast<UINT>(width),
         static_cast<UINT>(height),
         1, // The render target view has only one texture.
@@ -146,33 +139,23 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
         D3D11_BIND_RENDER_TARGET,
         D3D11_USAGE_DEFAULT,
         0,
-        m_sampleCount
-    );
+        m_sampleCount);
 
-    ThrowIfFailed(m_device->CreateTexture2D(
-        &renderTargetDesc,
-        nullptr,
-        m_msaaRenderTarget.ReleaseAndGetAddressOf()
-    ));
+    ThrowIfFailed(m_device->CreateTexture2D(&renderTargetDesc, nullptr, m_msaaRenderTarget.ReleaseAndGetAddressOf()));
 
     SetDebugObjectName(m_msaaRenderTarget.Get(), "MSAA Render Target");
 
-    const CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DMS,
-        m_backBufferFormat);
+    const CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DMS, m_backBufferFormat);
 
-    ThrowIfFailed(m_device->CreateRenderTargetView(
-        m_msaaRenderTarget.Get(),
-        &renderTargetViewDesc,
-        m_renderTargetView.ReleaseAndGetAddressOf()
-    ));
+    ThrowIfFailed(
+        m_device->CreateRenderTargetView(m_msaaRenderTarget.Get(), &renderTargetViewDesc, m_renderTargetView.ReleaseAndGetAddressOf()));
 
     SetDebugObjectName(m_renderTargetView.Get(), "MSAA Render Target");
 
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
         // Create an MSAA depth stencil view
-        const CD3D11_TEXTURE2D_DESC depthStencilDesc(
-            m_depthBufferFormat,
+        const CD3D11_TEXTURE2D_DESC depthStencilDesc(m_depthBufferFormat,
             static_cast<UINT>(width),
             static_cast<UINT>(height),
             1, // This depth stencil view has only one texture.
@@ -180,33 +163,22 @@ void MSAAHelper::SizeResources(size_t width, size_t height)
             D3D11_BIND_DEPTH_STENCIL,
             D3D11_USAGE_DEFAULT,
             0,
-            m_sampleCount
-        );
+            m_sampleCount);
 
-        ThrowIfFailed(m_device->CreateTexture2D(
-            &depthStencilDesc,
-            nullptr,
-            m_msaaDepthStencil.ReleaseAndGetAddressOf()
-        ));
+        ThrowIfFailed(m_device->CreateTexture2D(&depthStencilDesc, nullptr, m_msaaDepthStencil.ReleaseAndGetAddressOf()));
 
         SetDebugObjectName(m_msaaDepthStencil.Get(), "MSAA Depth/Stencil");
 
-        const CD3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS,
-            m_depthBufferFormat);
+        const CD3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS, m_depthBufferFormat);
 
-        ThrowIfFailed(m_device->CreateDepthStencilView(
-            m_msaaDepthStencil.Get(),
-            &dsvDesc,
-            m_depthStencilView.ReleaseAndGetAddressOf()
-        ));
+        ThrowIfFailed(m_device->CreateDepthStencilView(m_msaaDepthStencil.Get(), &dsvDesc, m_depthStencilView.ReleaseAndGetAddressOf()));
 
         SetDebugObjectName(m_depthStencilView.Get(), "MSAA Depth/Stencil");
     }
 
-    m_width = width;
+    m_width  = width;
     m_height = height;
 }
-
 
 void MSAAHelper::ReleaseDevice()
 {
@@ -220,17 +192,15 @@ void MSAAHelper::ReleaseDevice()
     m_width = m_height = 0;
 }
 
-
 void MSAAHelper::Resolve(_In_ ID3D11DeviceContext* context, _In_ ID3D11Texture2D* backBuffer)
 {
     context->ResolveSubresource(backBuffer, 0, m_msaaRenderTarget.Get(), 0, m_backBufferFormat);
 }
 
-
 void MSAAHelper::SetWindow(const RECT& output)
 {
     // Determine the render target size in pixels.
-    auto const width = size_t(std::max<LONG>(output.right - output.left, 1));
+    auto const width  = size_t(std::max<LONG>(output.right - output.left, 1));
     auto const height = size_t(std::max<LONG>(output.bottom - output.top, 1));
 
     SizeResources(width, height);

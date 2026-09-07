@@ -33,7 +33,6 @@ namespace
             {
                 OutputDebugStringA("ERROR: TestComponent can't get AudioEngine service\n");
             }
-
         }
 
         virtual void Update(DX::StepTimer const& timer) override
@@ -46,15 +45,9 @@ namespace
     class DrawTestComponent : public IDrawableGameComponent
     {
     public:
-        virtual void Initialize() override
-        {
-            OutputDebugStringA("DrawTestComponent initalized\n");
-        }
+        virtual void Initialize() override { OutputDebugStringA("DrawTestComponent initalized\n"); }
 
-        virtual void Update(DX::StepTimer const&) override
-        {
-            OutputDebugStringA("DrawTestComponent updated\n");
-        }
+        virtual void Update(DX::StepTimer const&) override { OutputDebugStringA("DrawTestComponent updated\n"); }
 
 #ifdef BUILD_DX12
         virtual void Draw(_In_ ID3D12GraphicsCommandList*) override
@@ -81,15 +74,9 @@ namespace
     class DrawTestComponent2 : public IDrawableGameComponent
     {
     public:
-        virtual void Initialize() override
-        {
-            OutputDebugStringA("DrawTestComponent2 initalized\n");
-        }
+        virtual void Initialize() override { OutputDebugStringA("DrawTestComponent2 initalized\n"); }
 
-        virtual void Update(DX::StepTimer const&) override
-        {
-            OutputDebugStringA("DrawTestComponent2 updated\n");
-        }
+        virtual void Update(DX::StepTimer const&) override { OutputDebugStringA("DrawTestComponent2 updated\n"); }
 
 #ifdef BUILD_DX12
         virtual void Draw(_In_ ID3D12GraphicsCommandList*) override
@@ -100,30 +87,21 @@ namespace
             OutputDebugStringA("DrawTestComponent2 drawn\n");
         }
 
-        virtual void LoadGraphicsContent() override
-        {
-            OutputDebugStringA("DrawTestComponent2 load graphics content\n");
-        }
+        virtual void LoadGraphicsContent() override { OutputDebugStringA("DrawTestComponent2 load graphics content\n"); }
 
-        virtual void UnloadGraphicsContent() override
-        {
-            OutputDebugStringA("DrawTestComponent2 unload graphics content\n");
-        }
+        virtual void UnloadGraphicsContent() override { OutputDebugStringA("DrawTestComponent2 unload graphics content\n"); }
     };
-}
+} // namespace
 #endif
 
-Game::Game() noexcept(false) :
-    m_retryAudio(false),
-    m_suppressDraw(false)
+Game::Game() noexcept(false)
+    : m_retryAudio(false),
+      m_suppressDraw(false)
 {
     m_components.SetGame(this);
 
-    m_deviceResources = std::make_unique<DX::DeviceResources>(
-        DXGI_FORMAT_R10G10B10A2_UNORM,
-        DXGI_FORMAT_D32_FLOAT,
-        3,
-        D3D_FEATURE_LEVEL_11_0);
+    m_deviceResources
+        = std::make_unique<DX::DeviceResources>(DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_D32_FLOAT, 3, D3D_FEATURE_LEVEL_11_0);
     m_deviceResources->RegisterDeviceNotify(this);
 
     m_hdrScene = std::make_unique<DX::RenderTexture>(DXGI_FORMAT_R11G11B10_FLOAT);
@@ -172,9 +150,9 @@ void Game::Initialize(HWND window, int width, int height)
     CreateWindowSizeDependentResources();
 
     // Input devices
-    m_gamePad = std::make_unique<GamePad>();
+    m_gamePad  = std::make_unique<GamePad>();
     m_keyboard = std::make_unique<Keyboard>();
-    m_mouse = std::make_unique<Mouse>();
+    m_mouse    = std::make_unique<Mouse>();
     m_mouse->SetWindow(window);
 
     // Audio device
@@ -194,22 +172,19 @@ void Game::Initialize(HWND window, int width, int height)
     m_components.Initialize();
 }
 
-void Game::LoadContent()
-{
-}
+void Game::LoadContent() {}
 
-void Game::UnloadContent()
-{
-}
+void Game::UnloadContent() {}
 
 #pragma region Frame Update
 // Executes the basic game loop.
 void Game::Tick()
 {
-    m_timer.Tick([&]()
-    {
-        Update(m_timer);
-    });
+    m_timer.Tick(
+        [&]()
+        {
+            Update(m_timer);
+        });
 
     Render();
 
@@ -232,7 +207,7 @@ void Game::Tick()
 }
 
 // Updates the world.
-void Game::Update(DX::StepTimer const&timer)
+void Game::Update(DX::StepTimer const& timer)
 {
     PIXBeginEvent(PIX_COLOR_DEFAULT, L"Update");
 
@@ -319,13 +294,13 @@ void Game::Clear()
     commandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // Set the viewport and scissor rect.
-    auto const viewport = m_deviceResources->GetScreenViewport();
+    auto const viewport    = m_deviceResources->GetScreenViewport();
     auto const scissorRect = m_deviceResources->GetScissorRect();
     commandList->RSSetViewports(1, &viewport);
     commandList->RSSetScissorRects(1, &scissorRect);
 #else
     // Clear the views.
-    auto context = m_deviceResources->GetD3DDeviceContext();
+    auto context      = m_deviceResources->GetD3DDeviceContext();
     auto renderTarget = m_hdrScene->GetRenderTargetView();
     auto depthStencil = m_deviceResources->GetDepthStencilView();
 
@@ -344,13 +319,9 @@ void Game::Clear()
 
 #pragma region Message Handlers
 // Message handlers
-void Game::OnActivated()
-{
-}
+void Game::OnActivated() {}
 
-void Game::OnDeactivated()
-{
-}
+void Game::OnDeactivated() {}
 
 void Game::OnSuspending()
 {
@@ -384,14 +355,12 @@ void Game::OnWindowSizeChanged(int width, int height)
     CreateWindowSizeDependentResources();
 }
 
-void Game::OnExiting()
-{
-}
+void Game::OnExiting() {}
 
 // Properties
 void Game::GetDefaultSize(int& width, int& height) const noexcept
 {
-    width = 1280;
+    width  = 1280;
     height = 720;
 }
 #pragma endregion
@@ -416,9 +385,7 @@ void Game::CreateDeviceDependentResources()
 
     m_graphicsMemory = std::make_unique<GraphicsMemory>(device);
 
-    m_resourceDescriptors = std::make_unique<DescriptorPile>(device,
-        Descriptors::Count,
-        Descriptors::Reserve);
+    m_resourceDescriptors = std::make_unique<DescriptorPile>(device, Descriptors::Count, Descriptors::Reserve);
 
     m_renderDescriptors = std::make_unique<DescriptorPile>(device,
         D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
@@ -430,13 +397,10 @@ void Game::CreateDeviceDependentResources()
         m_resourceDescriptors->GetCpuHandle(Descriptors::SceneTex),
         m_renderDescriptors->GetCpuHandle(RTDescriptors::HDRScene));
 
-    const RenderTargetState rtState(m_deviceResources->GetBackBufferFormat(),
-        DXGI_FORMAT_UNKNOWN);
+    const RenderTargetState rtState(m_deviceResources->GetBackBufferFormat(), DXGI_FORMAT_UNKNOWN);
 
     // Set tone-mapper as 'pass-through' for now...
-    m_toneMap = std::make_unique<ToneMapPostProcess>(device,
-        rtState,
-        ToneMapPostProcess::None, ToneMapPostProcess::SRGB);
+    m_toneMap = std::make_unique<ToneMapPostProcess>(device, rtState, ToneMapPostProcess::None, ToneMapPostProcess::SRGB);
 #else
     m_hdrScene->SetDevice(device);
 

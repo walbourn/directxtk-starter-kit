@@ -27,24 +27,21 @@ using Microsoft::WRL::ComPtr;
 #define DX_CONSTEXPR constexpr
 #endif
 
-RenderTexture::RenderTexture(DXGI_FORMAT format) noexcept :
-    m_state(D3D12_RESOURCE_STATE_COMMON),
-    m_srvDescriptor{},
-    m_rtvDescriptor{},
-    m_clearColor{},
-    m_format(format),
-    m_width(0),
-    m_height(0)
-{
-}
+RenderTexture::RenderTexture(DXGI_FORMAT format) noexcept
+    : m_state(D3D12_RESOURCE_STATE_COMMON),
+      m_srvDescriptor{},
+      m_rtvDescriptor{},
+      m_clearColor{},
+      m_format(format),
+      m_width(0),
+      m_height(0)
+{}
 
 void RenderTexture::SetDevice(_In_ ID3D12Device* device,
-    D3D12_CPU_DESCRIPTOR_HANDLE srvDescriptor,
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor)
+    D3D12_CPU_DESCRIPTOR_HANDLE                  srvDescriptor,
+    D3D12_CPU_DESCRIPTOR_HANDLE                  rtvDescriptor)
 {
-    if (device == m_device.Get()
-        && srvDescriptor.ptr == m_srvDescriptor.ptr
-        && rtvDescriptor.ptr == m_rtvDescriptor.ptr)
+    if (device == m_device.Get() && srvDescriptor.ptr == m_srvDescriptor.ptr && rtvDescriptor.ptr == m_rtvDescriptor.ptr)
         return;
 
     if (m_device)
@@ -102,7 +99,11 @@ void RenderTexture::SizeResources(size_t width, size_t height)
     const D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(m_format,
         static_cast<UINT64>(width),
         static_cast<UINT>(height),
-        1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+        1,
+        1,
+        1,
+        0,
+        D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 
     D3D12_CLEAR_VALUE clearValue = { m_format, {} };
     memcpy(clearValue.Color, m_clearColor, sizeof(clearValue.Color));
@@ -110,12 +111,12 @@ void RenderTexture::SizeResources(size_t width, size_t height)
     m_state = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
     // Create a render target
-    ThrowIfFailed(
-        m_device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
-            &desc,
-            m_state, &clearValue,
-            IID_GRAPHICS_PPV_ARGS(m_resource.ReleaseAndGetAddressOf()))
-    );
+    ThrowIfFailed(m_device->CreateCommittedResource(&heapProperties,
+        D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+        &desc,
+        m_state,
+        &clearValue,
+        IID_GRAPHICS_PPV_ARGS(m_resource.ReleaseAndGetAddressOf())));
 
     SetDebugObjectName(m_resource.Get(), L"RenderTexture RT");
 
@@ -125,7 +126,7 @@ void RenderTexture::SizeResources(size_t width, size_t height)
     // Create SRV.
     m_device->CreateShaderResourceView(m_resource.Get(), nullptr, m_srvDescriptor);
 
-    m_width = width;
+    m_width  = width;
     m_height = height;
 }
 
@@ -140,8 +141,7 @@ void RenderTexture::ReleaseDevice() noexcept
     m_srvDescriptor.ptr = m_rtvDescriptor.ptr = 0;
 }
 
-void RenderTexture::TransitionTo(_In_ ID3D12GraphicsCommandList* commandList,
-    D3D12_RESOURCE_STATES afterState)
+void RenderTexture::TransitionTo(_In_ ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES afterState)
 {
     TransitionResource(commandList, m_resource.Get(), m_state, afterState);
     m_state = afterState;
@@ -150,7 +150,7 @@ void RenderTexture::TransitionTo(_In_ ID3D12GraphicsCommandList* commandList,
 void RenderTexture::SetWindow(const RECT& output)
 {
     // Determine the render target size in pixels.
-    const auto width = size_t(std::max<LONG>(output.right - output.left, 1));
+    const auto width  = size_t(std::max<LONG>(output.right - output.left, 1));
     const auto height = size_t(std::max<LONG>(output.bottom - output.top, 1));
 
     SizeResources(width, height);

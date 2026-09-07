@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="DX11/DirectXTKStarterKit.vcxproj" Id="48a9f4eb-5a3e-408e-984d-e107542a7d02" />
+  <Project DefaultStartup="true" Path="DX12/DirectXTK12StarterKit.vcxproj" Id="512ce58a-22ce-4978-b58f-dcf22fb03a0a" />
+</Solution>

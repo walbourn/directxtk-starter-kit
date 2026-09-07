@@ -23,7 +23,6 @@ include(../build/CompilerAndLinker.cmake)
 include (../build/Shared.cmake)
 
 set(DX12_UTILITY
-    d3dx12.h
     DeviceResources.cpp
     DeviceResources.h
     RenderTexture.h
