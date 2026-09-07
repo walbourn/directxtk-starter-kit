@@ -39,9 +39,9 @@ jobs:
       - name: 'Build (Debug)'
         run: >
           msbuild /p:Configuration=Debug /p:Platform=${{ matrix.platform }}
-          DirectXTKStarterKit.sln
+          DirectXTKStarterKit.slnx
 
       - name: 'Build (Release)'
         run: >
           msbuild /p:Configuration=Release /p:Platform=${{ matrix.platform }}
-          DirectXTKStarterKit.sln
+          DirectXTKStarterKit.slnx
