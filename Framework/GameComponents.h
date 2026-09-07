@@ -18,11 +18,11 @@ namespace DX::Framework
     class IGameComponent
     {
     public:
-        IGameComponent(IGameComponent&&) = default;
-        IGameComponent& operator= (IGameComponent&&) = default;
+        IGameComponent(IGameComponent&&)            = default;
+        IGameComponent& operator=(IGameComponent&&) = default;
 
-        IGameComponent(IGameComponent const&) = default;
-        IGameComponent& operator= (IGameComponent const&) = default;
+        IGameComponent(IGameComponent const&)            = default;
+        IGameComponent& operator=(IGameComponent const&) = default;
 
         virtual ~IGameComponent() = default;
 
@@ -32,31 +32,29 @@ namespace DX::Framework
 
         // Properties
         bool m_enabled;
-        int m_order;
+        int  m_order;
 
         void SetGame(_In_ Game* game) noexcept { m_game = game; }
 
     protected:
         Game* m_game;
 
-        IGameComponent() :
-            m_enabled(true),
-            m_order(0),
-            m_game(nullptr)
-        {
-        }
+        IGameComponent()
+            : m_enabled(true),
+              m_order(0),
+              m_game(nullptr)
+        {}
     };
-
 
     // An abstract base class for game components that can be drawn
     class IDrawableGameComponent : public IGameComponent
     {
     public:
-        IDrawableGameComponent(IDrawableGameComponent&&) = default;
-        IDrawableGameComponent& operator= (IDrawableGameComponent&&) = default;
+        IDrawableGameComponent(IDrawableGameComponent&&)            = default;
+        IDrawableGameComponent& operator=(IDrawableGameComponent&&) = default;
 
-        IDrawableGameComponent(IDrawableGameComponent const&) = default;
-        IDrawableGameComponent& operator= (IDrawableGameComponent const&) = default;
+        IDrawableGameComponent(IDrawableGameComponent const&)            = default;
+        IDrawableGameComponent& operator=(IDrawableGameComponent const&) = default;
 
 #ifdef BUILD_DX12
         virtual void Draw(_In_ ID3D12GraphicsCommandList* commandList) = 0;
@@ -72,28 +70,25 @@ namespace DX::Framework
         bool m_hidden;
 
     protected:
-        IDrawableGameComponent() :
-            IGameComponent(),
-            m_hidden(false)
-        {
-        }
+        IDrawableGameComponent()
+            : IGameComponent(),
+              m_hidden(false)
+        {}
     };
-
 
     // A class for handling the collection of game components
     class GameComponentCollection
     {
     public:
-        GameComponentCollection() :
-            mGame(nullptr),
-            mDirtyOrder(false)
-        {
-        }
+        GameComponentCollection()
+            : mGame(nullptr),
+              mDirtyOrder(false)
+        {}
 
-        GameComponentCollection(GameComponentCollection&&) = default;
+        GameComponentCollection(GameComponentCollection&&)            = default;
         GameComponentCollection& operator=(GameComponentCollection&&) = default;
 
-        GameComponentCollection(const GameComponentCollection&) = delete;
+        GameComponentCollection(const GameComponentCollection&)            = delete;
         GameComponentCollection& operator=(const GameComponentCollection&) = delete;
 
         ~GameComponentCollection() { Clear(); }
@@ -144,9 +139,9 @@ namespace DX::Framework
 
     private:
         Game* mGame;
-        bool mDirtyOrder;
+        bool  mDirtyOrder;
 
-        std::vector<IGameComponent*> mGameComponents;
+        std::vector<IGameComponent*>         mGameComponents;
         std::vector<IDrawableGameComponent*> mDrawableComponents;
     };
-}
+} // namespace DX::Framework

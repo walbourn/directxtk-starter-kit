@@ -15,15 +15,14 @@ namespace DX::Framework
     class Game : public DX::IDeviceNotify
     {
     public:
-
         Game() noexcept(false);
         virtual ~Game();
 
-        Game(Game&&) = default;
-        Game& operator= (Game&&) = default;
+        Game(Game&&)            = default;
+        Game& operator=(Game&&) = default;
 
-        Game(Game const&) = delete;
-        Game& operator= (Game const&) = delete;
+        Game(Game const&)            = delete;
+        Game& operator=(Game const&) = delete;
 
         // Initialization and management
         void Initialize(HWND window, int width, int height);
@@ -68,30 +67,30 @@ namespace DX::Framework
         void CreateWindowSizeDependentResources();
 
         // Device resources.
-        std::unique_ptr<DX::DeviceResources>    m_deviceResources;
+        std::unique_ptr<DX::DeviceResources> m_deviceResources;
 
         // Rendering loop timer.
-        DX::StepTimer                           m_timer;
+        DX::StepTimer m_timer;
 
         // Audio device.
-        std::unique_ptr<DirectX::AudioEngine>   m_audEngine;
+        std::unique_ptr<DirectX::AudioEngine> m_audEngine;
 
         // Input devices.
-        std::unique_ptr<DirectX::GamePad>       m_gamePad;
-        std::unique_ptr<DirectX::Keyboard>      m_keyboard;
-        std::unique_ptr<DirectX::Mouse>         m_mouse;
+        std::unique_ptr<DirectX::GamePad>  m_gamePad;
+        std::unique_ptr<DirectX::Keyboard> m_keyboard;
+        std::unique_ptr<DirectX::Mouse>    m_mouse;
 
         // Private state.
-        bool                                    m_retryAudio;
-        bool                                    m_suppressDraw;
+        bool m_retryAudio;
+        bool m_suppressDraw;
 
         // Graphics resources.
-        std::unique_ptr<DX::RenderTexture>              m_hdrScene;
-        std::unique_ptr<DirectX::ToneMapPostProcess>    m_toneMap;
+        std::unique_ptr<DX::RenderTexture>           m_hdrScene;
+        std::unique_ptr<DirectX::ToneMapPostProcess> m_toneMap;
 #ifdef BUILD_DX12
-        std::unique_ptr<DirectX::GraphicsMemory>        m_graphicsMemory;
-        std::unique_ptr<DirectX::DescriptorPile>        m_resourceDescriptors;
-        std::unique_ptr<DirectX::DescriptorPile>        m_renderDescriptors;
+        std::unique_ptr<DirectX::GraphicsMemory> m_graphicsMemory;
+        std::unique_ptr<DirectX::DescriptorPile> m_resourceDescriptors;
+        std::unique_ptr<DirectX::DescriptorPile> m_renderDescriptors;
 
         enum Descriptors
         {
@@ -108,11 +107,11 @@ namespace DX::Framework
         };
 #endif
 
-        GameComponentCollection                 m_components;
-        GameServiceContainer                    m_services;
+        GameComponentCollection m_components;
+        GameServiceContainer    m_services;
 
     public:
-        int Run(_In_ HINSTANCE hInstance, _In_ LPWSTR lpCmdLine, int nCmdShow, _In_z_ LPCWSTR szAppName);
+        int  Run(_In_ HINSTANCE hInstance, _In_ LPWSTR lpCmdLine, int nCmdShow, _In_z_ LPCWSTR szAppName);
         void Quit() noexcept;
     };
-}
+} // namespace DX::Framework

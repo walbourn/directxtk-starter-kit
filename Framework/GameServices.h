@@ -18,10 +18,10 @@ namespace DX::Framework
     public:
         GameServiceContainer() = default;
 
-        GameServiceContainer(GameServiceContainer&&) = default;
+        GameServiceContainer(GameServiceContainer&&)            = default;
         GameServiceContainer& operator=(GameServiceContainer&&) = default;
 
-        GameServiceContainer(const GameServiceContainer&) = delete;
+        GameServiceContainer(const GameServiceContainer&)            = delete;
         GameServiceContainer& operator=(const GameServiceContainer&) = delete;
 
         ~GameServiceContainer() { Clear(); }
@@ -56,4 +56,4 @@ namespace DX::Framework
         std::unordered_map<std::type_index, void*> mServices;
     };
 
-}
+} // namespace DX::Framework

@@ -13,4 +13,4 @@
 #endif
 
 // Default to fullscreen at startup
-//#define DEFAULT_FULLSCREEN
+// #define DEFAULT_FULLSCREEN

@@ -13,8 +13,7 @@ using namespace DirectX;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Entry point for framework
-_Use_decl_annotations_
-int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow, LPCWSTR szAppName)
+_Use_decl_annotations_ int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow, LPCWSTR szAppName)
 {
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -35,16 +34,16 @@ int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow
     HDEVNOTIFY hNewAudio = nullptr;
     {
         // Register class
-        WNDCLASSEXW wcex = {};
-        wcex.cbSize = sizeof(WNDCLASSEXW);
-        wcex.style = CS_HREDRAW | CS_VREDRAW;
-        wcex.lpfnWndProc = WndProc;
-        wcex.hInstance = hInstance;
-        wcex.hIcon = LoadIconW(hInstance, L"IDI_ICON");
-        wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+        WNDCLASSEXW wcex   = {};
+        wcex.cbSize        = sizeof(WNDCLASSEXW);
+        wcex.style         = CS_HREDRAW | CS_VREDRAW;
+        wcex.lpfnWndProc   = WndProc;
+        wcex.hInstance     = hInstance;
+        wcex.hIcon         = LoadIconW(hInstance, L"IDI_ICON");
+        wcex.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
         wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
         wcex.lpszClassName = L"StarterKitWindowClass";
-        wcex.hIconSm = LoadIconW(wcex.hInstance, L"IDI_ICON");
+        wcex.hIconSm       = LoadIconW(wcex.hInstance, L"IDI_ICON");
         if (!RegisterClassExW(&wcex))
             return 1;
 
@@ -57,12 +56,30 @@ int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow
         AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 #ifdef DEFAULT_FULLSCREEN
-        HWND hwnd = CreateWindowExW(WS_EX_TOPMOST, L"StarterKitWindowClass", szAppName, WS_POPUP,
-            CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
+        HWND hwnd = CreateWindowExW(WS_EX_TOPMOST,
+            L"StarterKitWindowClass",
+            szAppName,
+            WS_POPUP,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            rc.right - rc.left,
+            rc.bottom - rc.top,
+            nullptr,
+            nullptr,
+            hInstance,
             this);
 #else
-        HWND hwnd = CreateWindowExW(0, L"StarterKitWindowClass", szAppName, WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
+        HWND hwnd = CreateWindowExW(0,
+            L"StarterKitWindowClass",
+            szAppName,
+            WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            rc.right - rc.left,
+            rc.bottom - rc.top,
+            nullptr,
+            nullptr,
+            hInstance,
             this);
 #endif
         if (!hwnd)
@@ -79,9 +96,9 @@ int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow
 
         // Listen for new audio devices
         DEV_BROADCAST_DEVICEINTERFACE filter = {};
-        filter.dbcc_size = sizeof(filter);
-        filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-        filter.dbcc_classguid = KSCATEGORY_AUDIO;
+        filter.dbcc_size                     = sizeof(filter);
+        filter.dbcc_devicetype               = DBT_DEVTYP_DEVICEINTERFACE;
+        filter.dbcc_classguid                = KSCATEGORY_AUDIO;
 
         hNewAudio = RegisterDeviceNotification(hwnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
     }
@@ -120,8 +137,8 @@ int DX::Framework::Game::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static bool s_in_sizemove = false;
-    static bool s_in_suspend = false;
-    static bool s_minimized = false;
+    static bool s_in_suspend  = false;
+    static bool s_minimized   = false;
 #ifdef DEFAULT_FULLSCREEN
     static bool s_fullscreen = true;
 #else
@@ -191,9 +208,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-    case WM_ENTERSIZEMOVE:
-        s_in_sizemove = true;
-        break;
+    case WM_ENTERSIZEMOVE: s_in_sizemove = true; break;
 
     case WM_EXITSIZEMOVE:
         s_in_sizemove = false;
@@ -209,7 +224,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_GETMINMAXINFO:
         if (lParam)
         {
-            auto info = reinterpret_cast<MINMAXINFO*>(lParam);
+            auto info              = reinterpret_cast<MINMAXINFO*>(lParam);
             info->ptMinTrackSize.x = 320;
             info->ptMinTrackSize.y = 200;
         }
@@ -251,9 +266,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
+    case WM_DESTROY:     PostQuitMessage(0); break;
 
     case WM_ACTIVATE:
     case WM_MOUSEMOVE:
@@ -266,15 +279,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEWHEEL:
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
-    case WM_MOUSEHOVER:
-        Mouse::ProcessMessage(message, wParam, lParam);
-        break;
+    case WM_MOUSEHOVER:  Mouse::ProcessMessage(message, wParam, lParam); break;
 
     case WM_KEYDOWN:
     case WM_KEYUP:
-    case WM_SYSKEYUP:
-        Keyboard::ProcessMessage(message, wParam, lParam);
-        break;
+    case WM_SYSKEYUP:    Keyboard::ProcessMessage(message, wParam, lParam); break;
 
     case WM_SYSKEYDOWN:
         Keyboard::ProcessMessage(message, wParam, lParam);
@@ -286,7 +295,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
 
-                int width = 800;
+                int width  = 800;
                 int height = 600;
                 if (game)
                     game->GetDefaultSize(width, height);
@@ -340,7 +349,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
-
 
 // Exit helper
 void DX::Framework::Game::Quit() noexcept

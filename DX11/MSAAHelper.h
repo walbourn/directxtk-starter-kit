@@ -16,15 +16,15 @@ namespace DX
     class MSAAHelper
     {
     public:
-        explicit MSAAHelper(DXGI_FORMAT backBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM,
-            DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT,
-            unsigned int sampleCount = 4) noexcept(false);
+        explicit MSAAHelper(DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_B8G8R8A8_UNORM,
+            DXGI_FORMAT                 depthBufferFormat = DXGI_FORMAT_D32_FLOAT,
+            unsigned int                sampleCount       = 4) noexcept(false);
 
-        MSAAHelper(MSAAHelper&&) = default;
-        MSAAHelper& operator= (MSAAHelper&&) = default;
+        MSAAHelper(MSAAHelper&&)            = default;
+        MSAAHelper& operator=(MSAAHelper&&) = default;
 
-        MSAAHelper(MSAAHelper const&) = delete;
-        MSAAHelper& operator= (MSAAHelper const&) = delete;
+        MSAAHelper(MSAAHelper const&)            = delete;
+        MSAAHelper& operator=(MSAAHelper const&) = delete;
 
         void SetDevice(_In_ ID3D11Device* device);
 
@@ -42,24 +42,24 @@ namespace DX
         ID3D11RenderTargetView* GetMSAARenderTargetView() const noexcept { return m_renderTargetView.Get(); }
         ID3D11DepthStencilView* GetMSAADepthStencilView() const noexcept { return m_depthStencilView.Get(); }
 
-        DXGI_FORMAT GetBackBufferFormat() const noexcept { return m_backBufferFormat; }
-        DXGI_FORMAT GetDepthBufferFormat() const noexcept { return m_depthBufferFormat; }
+        DXGI_FORMAT  GetBackBufferFormat() const noexcept { return m_backBufferFormat; }
+        DXGI_FORMAT  GetDepthBufferFormat() const noexcept { return m_depthBufferFormat; }
         unsigned int GetSampleCount() const noexcept { return m_sampleCount; }
 
     private:
-        Microsoft::WRL::ComPtr<ID3D11Device>                m_device;
+        Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>             m_msaaRenderTarget;
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>             m_msaaDepthStencil;
-        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>      m_renderTargetView;
-        Microsoft::WRL::ComPtr<ID3D11DepthStencilView>      m_depthStencilView;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>        m_msaaRenderTarget;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>        m_msaaDepthStencil;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+        Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
-        DXGI_FORMAT                                         m_backBufferFormat;
-        DXGI_FORMAT                                         m_depthBufferFormat;
-        unsigned int                                        m_sampleCount;
-        unsigned int                                        m_targetSampleCount;
+        DXGI_FORMAT  m_backBufferFormat;
+        DXGI_FORMAT  m_depthBufferFormat;
+        unsigned int m_sampleCount;
+        unsigned int m_targetSampleCount;
 
-        size_t                                              m_width;
-        size_t                                              m_height;
+        size_t m_width;
+        size_t m_height;
     };
-}
+} // namespace DX
